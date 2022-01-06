@@ -72,3 +72,78 @@ class Database:
         for key in B.getKeys():
             if (key not in list(self.dict.keys())):
                 self.dict[key] = B.getCol(key)
+
+def standardizeTeamName(name, league = "Spain"):
+    name = name.lower()
+    if (league == "Spain"):
+        if (name == "barcelona"):
+            return ("FCB")
+        elif (name == "baskonia"):
+            return ("BASK")
+        elif ("obradoiro" in name):
+            return ("OBR")
+        elif ("manresa" in name):
+            return ("MAN")
+        elif ("tenerife" in name):
+            return ("TEN")
+        elif ("real betis" in name):
+            return ("BETIS")
+        elif ("andorra" in name):
+            return ("AND")
+        elif ("unicaja" in name):
+            return ("UNI")
+        elif ("real madrid" in name):
+            return ("RMB")
+        elif ("gran canaria" in name):
+            return ("GCN")
+        elif (name == "gipuzkoa"):
+            return ("GBC")
+        elif ("estudiantes" in name):
+            return ("EST")
+        elif ("badalona" in name):
+            return ("JOV")
+        elif ("zaragoza" in name):
+            return ("ZAR")
+        elif ("valencia" in name):
+            return ("VAL")
+        elif ("murcia" in name):
+            return ("MUR")
+        elif ("fuenlabrada" in name):
+            return ("MON")
+        elif ("bilbao" in name):
+            return ("BBB")
+        elif ("san pablo" in name):
+            return ("SPB")
+        elif ("breogan" in name):
+            return ("BRE")
+        else:
+            return ("ERROR: " + name)
+
+def monthToInt(month):
+    month = month.lower()
+    if ('jan' in month):
+        return (1)
+    if ('feb' in month):
+        return (2)
+    if ('mar' in month):
+        return (3)
+    if ('apr' in month):
+        return (4)
+    if ('may' in month):
+        return (5)
+    if ('jun' in month):
+        return (6)
+    if ('jul' in month):
+        return (7)
+    if ('aug' in month):
+        return (8)
+    if ('sep' in month):
+        return (9)
+    if ('oct' in month):
+        return (10)
+    if ('nov' in month):
+        return (11)
+    if ('dec' in month):
+        return (12)
+    else:
+        return (-1)

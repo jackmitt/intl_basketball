@@ -14,8 +14,8 @@ def americanToDecimal(odds):
         return (odds/100 + 1)
 
 
-## Scrapes regular season closing betting lines from oddsportal (consensus average) for all seasons since 2008/2009 and saves them to a csv - Make sure you have chromedriver.exe for the correct version of Chrome
-## Take out the covid bubble games yourself manually
+#Scrapes regular season closing betting lines from oddsportal (consensus average) for all seasons since 2008/2009 and saves them to a csv - Make sure you have chromedriver.exe for the correct version of Chrome
+#Take out the covid bubble games yourself manually
 def oddsportal(yearStart, yearEnd):
     A = Database(["Season","Date","Home","Away","Home ML","Away ML","Favorite","Spread","Home Spread Odds","Away Spread Odds","Home Score","Away Score","url"])
     seasons = []
@@ -55,95 +55,156 @@ def oddsportal(yearStart, yearEnd):
         scrapedGames = pd.read_csv('./csv_data/bettingLines.csv', encoding = "ISO-8859-1")["url"].tolist()
         for game in scrapedGames:
             gameUrls.remove(game)
+    try:
+        for game in gameUrls:
+            browser.get(game)
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            #season
+            A.addCellToRow(game.split("acb-")[1].split("-")[0] + '/' + game.split("acb-")[1].split("-")[1].split("/")[0])
+            #date
+            A.addCellToRow(soup.find(id="col-content").find("p").text)
+            #home
+            A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[0])
+            #away
+            A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[1])
+            #moneylines
+            pinnacleFound = False
+            for row in soup.find(class_="table-container").find_all("tr"):
+                try:
+                    sportsbook = row.find(class_="name").text
+                except:
+                    continue
+                if (sportsbook == "Pinnacle"):
+                    pinnacleFound = True
+                    #home
+                    A.addCellToRow(row.find_all("td")[1].text)
+                    #away
+                    A.addCellToRow(row.find_all("td")[2].text)
+            if (not pinnacleFound):
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+            #spread stuff
+            try:
+                browser.find_element_by_xpath("//*[@id='bettype-tabs']/ul/li[4]/a/span").click()
+            except:
+                A.trashRow()
+                continue
+            time.sleep(2)
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            minDiff = 99999
+            for option in soup.find(id="odds-data-table").find_all("div"):
+                try:
+                    diff = abs(americanToDecimal(float(option.find_all("a")[1].text)) - americanToDecimal(float(option.find_all("a")[2].text)))
+                    sp1 = americanToDecimal(float(option.find_all("a")[1].text))
+                    sp2 = americanToDecimal(float(option.find_all("a")[2].text))
+                except:
+                    continue
+                if (diff < minDiff and sp1 > 1.87 and sp2 > 1.87):
+                    bestSpread = option
+                    minDiff = diff
+            #favorite
+            try:
+                if ("+" in bestSpread.find("a").text):
+                    A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[1])
+                elif ("-" in bestSpread.find("a").text):
+                    A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[0])
+                else:
+                    A.addCellToRow("Even")
+            except:
+                A.trashRow()
+                continue
+            #spread
+            if ("+" in bestSpread.find("a").text):
+                A.addCellToRow(bestSpread.find("a").text.split("+")[1])
+            elif ("-" in bestSpread.find("a").text):
+                A.addCellToRow(bestSpread.find("a").text.split("-")[1])
+            else:
+                A.addCellToRow(0)
+            #home spread odds
+            A.addCellToRow(bestSpread.find_all("a")[1].text)
+            #away spread odds
+            A.addCellToRow(bestSpread.find_all("a")[2].text)
+            #home score
+            try:
+                A.addCellToRow(soup.find(class_="result").find("strong").text.split(":")[0])
+            except:
+                A.trashRow()
+                continue
+            #away score
+            if ("OT" in soup.find(class_="result").find("strong").text.split(":")[1]):
+                A.addCellToRow(soup.find(class_="result").find("strong").text.split(":")[1].split(" OT")[0])
+            else:
+                A.addCellToRow(soup.find(class_="result").find("strong").text.split(":")[1])
+            A.addCellToRow(game)
+            A.appendRow()
+            counter += 1
+            if (counter % 20 == 1):
+                A.dictToCsv("./csv_data/bettingLines.csv")
+    except:
+        browser.close()
+        print ("SCRAPER FAILED. RESTARTING...")
+        oddsportal(yearStart, yearEnd)
+
+    A.dictToCsv("./csv_data/bettingLines.csv")
+    browser.close()
+
+def realgm(urlRoot, year, month, day):
+    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
+    league = urlRoot.split("/scores")[0].split("/")[6]
+    print (league)
+    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+    browser.maximize_window()
+    if (not exists("./" + league + "_realgm_gameUrls.csv")):
+        curDate = datetime.date(year, month, day)
+        gameUrls = []
+        while (curDate < datetime.date(2022, 1, 1)):
+            browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            all = soup.find(class_="large-column-left scoreboard")
+            for t in all.find_all("table"):
+                for h in t.find_all('a'):
+                    #print (t.find_all("tr")[3].find("th").find("a")['href'])
+                    if (h.has_attr("href") and "boxscore" in h['href']):
+                        if (h['href'] not in gameUrls):
+                            gameUrls.append(h['href'])
+            curDate = curDate + datetime.timedelta(days=1)
+        save = {}
+        save["urls"] = gameUrls
+        dfFinal = pd.DataFrame.from_dict(save)
+        dfFinal = dfFinal.drop_duplicates()
+        dfFinal.to_csv('./' + league + '_realgm_gameUrls.csv', index = False)
+    else:
+        gameUrls = pd.read_csv('./' + league + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
+
+    counter = 0
+    # if (exists("./csv_data/gameStats.csv")):
+    #     A.initDictFromCsv("./csv_data/gameStats.csv")
+    #     scrapedGames = pd.read_csv('./csv_data/gameStats.csv', encoding = "ISO-8859-1")["url"].tolist()
+    #     for game in scrapedGames:
+    #         gameUrls.remove(game)
 
     for game in gameUrls:
-        browser.get(game)
+        browser.get("https://basketball.realgm.com" + game)
         soup = BeautifulSoup(browser.page_source, 'html.parser')
-        #season
-        A.addCellToRow(game.split("acb-")[1].split("-")[0] + '/' + game.split("acb-")[1].split("-")[1].split("/")[0])
-        #date
-        A.addCellToRow(soup.find(id="col-content").find("p").text)
-        #home
-        A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[0])
-        #away
-        A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[1])
-        #moneylines
-        pinnacleFound = False
-        for row in soup.find(class_="table-container").find_all("tr"):
-            try:
-                sportsbook = row.find(class_="name").text
-            except:
-                continue
-            if (sportsbook == "Pinnacle"):
-                pinnacleFound = True
-                #home
-                A.addCellToRow(row.find_all("td")[1].text)
-                #away
-                A.addCellToRow(row.find_all("td")[2].text)
-        if (not pinnacleFound):
-            A.addCellToRow(np.nan)
-            A.addCellToRow(np.nan)
-        #spread stuff
-        try:
-            browser.find_element_by_xpath("//*[@id='bettype-tabs']/ul/li[4]/a/span").click()
-        except:
-            A.trashRow()
-            continue
-        time.sleep(2)
-        soup = BeautifulSoup(browser.page_source, 'html.parser')
-        minDiff = 99999
-        for option in soup.find(id="odds-data-table").find_all("div"):
-            try:
-                diff = abs(americanToDecimal(float(option.find_all("a")[1].text)) - americanToDecimal(float(option.find_all("a")[2].text)))
-                sp1 = americanToDecimal(float(option.find_all("a")[1].text))
-                sp2 = americanToDecimal(float(option.find_all("a")[2].text))
-            except:
-                continue
-            if (diff < minDiff and sp1 > 1.87 and sp2 > 1.87):
-                bestSpread = option
-                minDiff = diff
-        #favorite
-        try:
-            if ("+" in bestSpread.find("a").text):
-                A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[1])
-            elif ("-" in bestSpread.find("a").text):
-                A.addCellToRow(soup.find(id="col-content").find("h1").text.split(" - ")[0])
-            else:
-                A.addCellToRow("Even")
-        except:
-            A.trashRow()
-            continue
-        #spread
-        if ("+" in bestSpread.find("a").text):
-            A.addCellToRow(bestSpread.find("a").text.split("+")[1])
-        elif ("-" in bestSpread.find("a").text):
-            A.addCellToRow(bestSpread.find("a").text.split("-")[1])
-        else:
-            A.addCellToRow(0)
-        #home spread odds
-        A.addCellToRow(bestSpread.find_all("a")[1].text)
-        #away spread odds
-        A.addCellToRow(bestSpread.find_all("a")[2].text)
-        #home score
-        try:
-            A.addCellToRow(soup.find(class_="result").find("strong").text.split(":")[0])
-        except:
-            A.trashRow()
-            continue
-        #away score
-        if ("OT" in soup.find(class_="result").find("strong").text.split(":")[1]):
-            A.addCellToRow(soup.find(class_="result").find("strong").text.split(":")[1].split(" OT")[0])
-        else:
-            A.addCellToRow(soup.find(class_="result").find("strong").text.split(":")[1])
+        A.addCellToRow(game.split("boxscore/")[1].split("/")[0])
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[0].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[0].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[3].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[3].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[4].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[4].text)
+        A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
+        A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
         A.addCellToRow(game)
         A.appendRow()
         counter += 1
         if (counter % 20 == 1):
-            A.dictToCsv("./csv_data/bettingLines.csv")
-    # except:
-    #     browser.close()
-    #     print ("SCRAPER FAILED. RESTARTING...")
-    #     oddsportal(yearStart, yearEnd)
-
-    A.dictToCsv("./csv_data/bettingLines.csv")
+            A.dictToCsv("./csv_data/" + league + "_gameStats.csv")
+    A.dictToCsv("./csv_data/" + league + "_gameStats.csv")
     browser.close()
