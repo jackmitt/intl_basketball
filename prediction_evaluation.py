@@ -11,14 +11,21 @@ def amToDec(odds):
 def kellyStake(p, decOdds):
     return (p - (1 - p)/(decOdds - 1))
 
-def simulateKellyBets(bankroll, kellyDiv = 1, league = "Spain"):
+def simulateKellyBets(bankroll, kellyDiv = 1, league = "Spain", preCovid = False):
     pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
     baseBR = bankroll
     netSum = 0
     myEdge = []
     actEdge = []
     totalBets = 0
+    stop = False
     for index, row in pred.iterrows():
+        if (row["Date"].split("/")[2] == "2020" and row["Date"].split("/")[0] == "3" and preCovid):
+            stop = True
+        if (stop):
+            myEdge.append(np.nan)
+            actEdge.append(np.nan)
+            continue
         if (row["Home Prob"] > 1 / amToDec(row["Home ML"])):
             totalBets += 1
             myEdge.append(row["Home Prob"] - 1 / amToDec(row["Home ML"]))
