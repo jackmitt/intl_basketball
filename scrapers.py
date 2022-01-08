@@ -218,23 +218,35 @@ def nowgoal(urlRoot, startMonth, league):
     A = Database(["Date","Home","Away","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","url"])
     browser = webdriver.Chrome(executable_path='chromedriver.exe')
     browser.maximize_window()
-    rootier = "https://basketball.nowgoal5.com/Normal/"
-    league_num = urlRoot.split("/")[5]
-    curDate = datetime.date(2014, startMonth, 1)
-    curSeason = "2014-2015"
-    gameUrls = []
-    while (curDate < datetime.date(2022, 1, 1)):
-        browser.get(curDate.strftime(rootier + curSeason + "/" + league_num + "?y=%Y&m=%m"))
-        soup = BeautifulSoup(browser.page_source, 'html.parser')
-        if (len(soup.find_all(class_="odds-icon1x2 r0")) > 0):
-            for t in soup.find_all(class_="odds-icon1x2 r0"):
-                gameUrls.append(t['href'])
-            needToUpdate = True
-        else:
-            if (needToUpdate):
-                curSeason = str(curDate.year) + "-" + str(curDate.year + 1)
-                needToUpdate = False
-        curDate = curDate + relativedelta(months=+1)
+    if (not exists("./" + league + "_nowgoal_gameUrls.csv")):
+        rootier = "https://basketball.nowgoal5.com/Normal/"
+        league_num = urlRoot.split("/")[5]
+        curDate = datetime.date(2014, startMonth, 1)
+        curSeason = "2014-2015"
+        gameUrls = []
+        while (curDate < datetime.date(2022, 1, 1)):
+            try:
+                browser.get(curDate.strftime(rootier + curSeason + "/" + league_num + "?y=%Y&m=%m"))
+            except:
+                time.sleep(300)
+                nowgoal(urlRoot, startMonth, league)
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            if (len(soup.find_all(class_="odds-icon1x2 r0")) > 0):
+                for t in soup.find_all(class_="odds-icon1x2 r0"):
+                    gameUrls.append(t['href'])
+                needToUpdate = True
+            else:
+                if (needToUpdate):
+                    curSeason = str(curDate.year) + "-" + str(curDate.year + 1)
+                    needToUpdate = False
+            curDate = curDate + relativedelta(months=+1)
+        save = {}
+        save["urls"] = gameUrls
+        dfFinal = pd.DataFrame.from_dict(save)
+        dfFinal = dfFinal.drop_duplicates()
+        dfFinal.to_csv('./' + league + '_nowgoal_gameUrls.csv', index = False)
+    else:
+        gameUrls = pd.read_csv('./' + league + '_nowgoal_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
     #
     #
     counter = 0
@@ -284,8 +296,22 @@ def nowgoal(urlRoot, startMonth, league):
             if (counter % 20 == 1):
                 A.dictToCsv("./csv_data/" + league + "_spreads.csv")
     except:
-        time.sleep(300)
+        time.sleep(60)
         browser.close()
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(game)
+        A.appendRow()
+        A.dictToCsv("./csv_data/" + league + "_spreads.csv")
         nowgoal(urlRoot, startMonth, league)
     A.dictToCsv("./csv_data/" + league + "_spreads.csv")
     browser.close()
