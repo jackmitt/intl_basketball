@@ -256,10 +256,10 @@ def nowgoal(urlRoot, startMonth, league):
         for game in scrapedGames:
             gameUrls.remove(game)
 
-    try:
-        for game in gameUrls:
-            browser.get("https:" + game)
-            soup = BeautifulSoup(browser.page_source, 'html.parser')
+    for game in gameUrls:
+        browser.get("https:" + game)
+        soup = BeautifulSoup(browser.page_source, 'html.parser')
+        try:
             A.addCellToRow(soup.find(id="headStr").find("span").text.split()[0])
             A.addCellToRow(soup.find_all(class_="o_team")[0].text)
             A.addCellToRow(soup.find_all(class_="o_team")[1].text)
@@ -295,23 +295,35 @@ def nowgoal(urlRoot, startMonth, league):
             counter += 1
             if (counter % 20 == 1):
                 A.dictToCsv("./csv_data/" + league + "_spreads.csv")
-    except:
-        time.sleep(60)
-        browser.close()
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
-        A.addCellToRow(game)
-        A.appendRow()
-        A.dictToCsv("./csv_data/" + league + "_spreads.csv")
-        nowgoal(urlRoot, startMonth, league)
+        except:
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(game)
+            A.appendRow()
+    # except:
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(np.nan)
+    #     A.addCellToRow(game)
+    #     A.appendRow()
+        # A.dictToCsv("./csv_data/" + league + "_spreads.csv")
+        # nowgoal(urlRoot, startMonth, league)
     A.dictToCsv("./csv_data/" + league + "_spreads.csv")
     browser.close()

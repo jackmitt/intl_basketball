@@ -8,7 +8,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 
-def combine_betting_and_stats(league = "Spain"):
+#for oddsportal - obsolete
+def combine_lines_and_stats(league):
     stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
     odds = pd.read_csv("./csv_data/" + league + "/bettingLines.csv", encoding = "ISO-8859-1")
     A = Database(["Season","Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home ML","Away ML","Favorite","Spread","Home Spread Odds","Away Spread Odds","Home Score","Away Score"])
@@ -72,8 +73,77 @@ def combine_betting_and_stats(league = "Spain"):
             A.appendRow()
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
+#for spreads
+def combine_spreads_and_stats(league):
+    stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
+    odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
+    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score"])
+    for i, r in stats.iterrows():
+        found = False
+        print (i)
+        for index, row in odds.iterrows():
+            try:
+                if ("/" in row["Date"]):
+                    oddsDate = datetime.date(int(row["Date"].split("/")[2]), int(row["Date"].split("/")[1]), int(row["Date"].split("/")[0]))
+                else:
+                    oddsDate = datetime.date(int(row["Date"].split("-")[2]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[0]))
+            except:
+                continue
+            if (r["Home"] in standardizeTeamName(row["Home"], league) and r["Away"] in standardizeTeamName(row["Away"], league) and abs(oddsDate - datetime.date(int(r["Date"].split("-")[0]), int(r["Date"].split("-")[1]), int(r["Date"].split("-")[2]))).days <= 1):
+                A.addCellToRow(r["Date"])
+                A.addCellToRow(standardizeTeamName(row["Home"], league))
+                A.addCellToRow(standardizeTeamName(row["Away"], league))
+                A.addCellToRow(r["h_ORtg"])
+                A.addCellToRow(r["a_ORtg"])
+                A.addCellToRow(r["h_eFG%"])
+                A.addCellToRow(r["a_eFG%"])
+                A.addCellToRow(r["h_TO%"])
+                A.addCellToRow(r["a_TO%"])
+                A.addCellToRow(r["h_OR%"])
+                A.addCellToRow(r["a_OR%"])
+                A.addCellToRow(r["h_FTR"])
+                A.addCellToRow(r["a_FTR"])
+                A.addCellToRow(r["h_FIC"])
+                A.addCellToRow(r["a_FIC"])
+                A.addCellToRow(row["Open Spread"])
+                A.addCellToRow(row["Home Open Spread Odds"])
+                A.addCellToRow(row["Away Open Spread Odds"])
+                A.addCellToRow(row["Close Spread"])
+                A.addCellToRow(row["Home Close Spread Odds"])
+                A.addCellToRow(row["Away Close Spread Odds"])
+                A.addCellToRow(row["Home Score"])
+                A.addCellToRow(row["Away Score"])
+                A.appendRow()
+                found = True
+                break
+        if (not found):
+            A.addCellToRow(r["Date"])
+            A.addCellToRow(r["Home"])
+            A.addCellToRow(r["Away"])
+            A.addCellToRow(r["h_ORtg"])
+            A.addCellToRow(r["a_ORtg"])
+            A.addCellToRow(r["h_eFG%"])
+            A.addCellToRow(r["a_eFG%"])
+            A.addCellToRow(r["h_TO%"])
+            A.addCellToRow(r["a_TO%"])
+            A.addCellToRow(r["h_OR%"])
+            A.addCellToRow(r["a_OR%"])
+            A.addCellToRow(r["h_FTR"])
+            A.addCellToRow(r["a_FTR"])
+            A.addCellToRow(r["h_FIC"])
+            A.addCellToRow(r["a_FIC"])
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.appendRow()
+    A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
-def preMatchAverages(league = "Spain"):
+def preMatchAverages(league):
     stats = pd.read_csv("./csv_data/" + league + "/combined.csv", encoding = "ISO-8859-1")
     A = Database(["Season","Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home ML","Away ML","Favorite","Spread","Home Spread Odds","Away Spread Odds","Home Score","Away Score"])
     for index, row in stats.iterrows():
@@ -297,7 +367,7 @@ def preMatchAverages(league = "Spain"):
 
     A.dictToCsv("./csv_data/" + league + "/preMatchAverages.csv")
 
-def train_test_split(league = "Spain"):
+def train_test_split(league):
     data = pd.read_csv("./csv_data/" + league + "/preMatchAverages.csv", encoding = "ISO-8859-1")
     hw = []
     for index, row in data.iterrows():
@@ -319,7 +389,7 @@ def train_test_split(league = "Spain"):
     data.iloc[trainRows].to_csv("./csv_data/" + league + "/train.csv", index = False)
     data.iloc[testRows].to_csv("./csv_data/" + league + "/test.csv", index = False)
 
-def predictions(league = "Spain"):
+def predictions(league):
     predictions = []
     train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1")
     test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1")
