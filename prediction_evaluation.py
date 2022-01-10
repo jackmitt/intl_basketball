@@ -54,3 +54,155 @@ def simulateKellyBets(bankroll, kellyDiv = 1, league = "Spain", preCovid = False
     pred["Actual Edge"] = actEdge
     pred.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
     print(netSum, totalBets, netSum / totalBets)
+
+def analyzeMyLines(league):
+    pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
+    smallOpen = []
+    midOpen = []
+    largeOpen = []
+    largerOpen = []
+    smallClose = []
+    midClose = []
+    largeClose = []
+    largerClose = []
+    smallClv = []
+    midClv = []
+    largeClv = []
+    largerClv = []
+    for index, row in pred.iterrows():
+        if (abs(row["Predicted Spread"] - row["Open Spread"]) < 2):
+            if (row["Predicted Spread"] < row["Open Spread"]):
+                if (row["Close Spread"] < row["Open Spread"]):
+                    smallClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    smallClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] < row["Open Spread"]):
+                    smallOpen.append(1)
+                else:
+                    smallOpen.append(0)
+            else:
+                if (row["Close Spread"] > row["Open Spread"]):
+                    smallClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    smallClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] > row["Open Spread"]):
+                    smallOpen.append(1)
+                else:
+                    smallOpen.append(0)
+        elif (abs(row["Predicted Spread"] - row["Open Spread"]) < 5):
+            if (row["Predicted Spread"] < row["Open Spread"]):
+                if (row["Close Spread"] < row["Open Spread"]):
+                    midClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    midClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] < row["Open Spread"]):
+                    midOpen.append(1)
+                else:
+                    midOpen.append(0)
+            else:
+                if (row["Close Spread"] > row["Open Spread"]):
+                    midClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    midClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] > row["Open Spread"]):
+                    midOpen.append(1)
+                else:
+                    midOpen.append(0)
+        elif (abs(row["Predicted Spread"] - row["Open Spread"]) < 10):
+            if (row["Predicted Spread"] < row["Open Spread"]):
+                if (row["Close Spread"] < row["Open Spread"]):
+                    largeClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    largeClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] < row["Open Spread"]):
+                    largeOpen.append(1)
+                else:
+                    largeOpen.append(0)
+            else:
+                if (row["Close Spread"] > row["Open Spread"]):
+                    largeClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    largeClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] > row["Open Spread"]):
+                    largeOpen.append(1)
+                else:
+                    largeOpen.append(0)
+        else:
+            if (row["Predicted Spread"] < row["Open Spread"]):
+                if (row["Close Spread"] < row["Open Spread"]):
+                    largerClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    largerClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] < row["Open Spread"]):
+                    largerOpen.append(1)
+                else:
+                    largerOpen.append(0)
+            else:
+                if (row["Close Spread"] > row["Open Spread"]):
+                    largerClv.append(abs(row["Close Spread"] - row["Open Spread"]))
+                else:
+                    largerClv.append(0 - abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Actual Spread"] > row["Open Spread"]):
+                    largerOpen.append(1)
+                else:
+                    largerOpen.append(0)
+
+
+
+
+        if (abs(row["Predicted Spread"] - row["Close Spread"]) < 2):
+            if (row["Predicted Spread"] < row["Close Spread"]):
+                if (row["Actual Spread"] < row["Close Spread"]):
+                    smallClose.append(1)
+                else:
+                    smallClose.append(0)
+            else:
+                if (row["Actual Spread"] > row["Close Spread"]):
+                    smallClose.append(1)
+                else:
+                    smallClose.append(0)
+        elif (abs(row["Predicted Spread"] - row["Close Spread"]) < 5):
+            if (row["Predicted Spread"] < row["Close Spread"]):
+                if (row["Actual Spread"] < row["Close Spread"]):
+                    midClose.append(1)
+                else:
+                    midClose.append(0)
+            else:
+                if (row["Actual Spread"] > row["Close Spread"]):
+                    midClose.append(1)
+                else:
+                    midClose.append(0)
+        elif (abs(row["Predicted Spread"] - row["Close Spread"]) < 10):
+            if (row["Predicted Spread"] < row["Close Spread"]):
+                if (row["Actual Spread"] < row["Close Spread"]):
+                    largeClose.append(1)
+                else:
+                    largeClose.append(0)
+            else:
+                if (row["Actual Spread"] > row["Close Spread"]):
+                    largeClose.append(1)
+                else:
+                    largeClose.append(0)
+        else:
+            if (row["Predicted Spread"] < row["Close Spread"]):
+                if (row["Actual Spread"] < row["Close Spread"]):
+                    largerClose.append(1)
+                else:
+                    largerClose.append(0)
+            else:
+                if (row["Actual Spread"] > row["Close Spread"]):
+                    largerClose.append(1)
+                else:
+                    largerClose.append(0)
+    print ("<2 points vs Open:", np.average(smallOpen), "N:", len(smallOpen))
+    print ("2-5 points vs Open:", np.average(midOpen), "N:", len(midOpen))
+    print ("5-10 points vs Open:", np.average(largeOpen), "N:", len(largeOpen))
+    print (">10 points vs Open:", np.average(largerOpen), "N:", len(largerOpen))
+    print ("<2 points vs Close:", np.average(smallClose), "N:", len(smallClose))
+    print ("2-5 points vs Close:", np.average(midClose), "N:", len(midClose))
+    print ("5-10 points vs Close:", np.average(largeClose), "N:", len(largeClose))
+    print (">10 points vs Close:", np.average(largerClose), "N:", len(largerClose))
+    print ("<2 points CLV:", np.average(smallClv), "N:", len(smallClv))
+    print ("2-5 points CLV:", np.average(midClv), "N:", len(midClv))
+    print ("5-10 points CLV:", np.average(largeClv), "N:", len(largeClv))
+    print (">10 points CLV:", np.average(largerClv), "N:", len(largerClv))

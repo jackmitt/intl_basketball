@@ -4,15 +4,16 @@ from scrapers import nowgoal
 import data_manipulation as dm
 import prediction_evaluation as pe
 
-dm.combine_spreads_and_stats("Italy")
 
 
 leagues = ["Spain","France","Greece","Italy","Australia","Germany"]
 for league in leagues:
-    dm.combine_spreads_and_stats(league)
-#     dm.preMatchAverages()
-#     dm.train_test_split()
-#     dm.predictions()
+    print (league + "---------------------------------------------------------------------------")
+    #dm.combine_spreads_and_stats(league)
+    #dm.preMatchAverages(league)
+    #dm.train_test_split(league)
+    #dm.predictions(league)
+    pe.analyzeMyLines(league)
 
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 

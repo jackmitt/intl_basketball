@@ -145,19 +145,15 @@ def combine_spreads_and_stats(league):
 
 def preMatchAverages(league):
     stats = pd.read_csv("./csv_data/" + league + "/combined.csv", encoding = "ISO-8859-1")
-    A = Database(["Season","Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home ML","Away ML","Favorite","Spread","Home Spread Odds","Away Spread Odds","Home Score","Away Score"])
+    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","Actual Spread"])
     for index, row in stats.iterrows():
-        print (index)
-        if (np.isnan(row["Spread"])):
-            continue
-        if (index == 0 or row["Season"] != stats.at[index-1,"Season"]):
+        if (index == 0 or abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(stats.at[index-1,"Date"].split("-")[0]), int(stats.at[index-1,"Date"].split("-")[1]), int(stats.at[index-1,"Date"].split("-")[2]))).days > 30):
             seasonDict = {}
         if (row["Home"] not in seasonDict):
             seasonDict[row["Home"]] = {"ORtg":[],"DRtg":[],"eFG%":[],"DeFG%":[],"TO%":[],"DTO%":[],"OR%":[],"DOR%":[],"FTR":[],"DFTR":[],"FIC":[],"DFIC":[],"adj_ORtg":[],"adj_DRtg":[],"adj_eFG%":[],"adj_DeFG%":[],"adj_TO%":[],"adj_DTO%":[],"adj_OR%":[],"adj_DOR%":[],"adj_FTR":[],"adj_DFTR":[],"adj_FIC":[],"adj_DFIC":[],"GP":0}
         if (row["Away"] not in seasonDict):
             seasonDict[row["Away"]] = {"ORtg":[],"DRtg":[],"eFG%":[],"DeFG%":[],"TO%":[],"DTO%":[],"OR%":[],"DOR%":[],"FTR":[],"DFTR":[],"FIC":[],"DFIC":[],"adj_ORtg":[],"adj_DRtg":[],"adj_eFG%":[],"adj_DeFG%":[],"adj_TO%":[],"adj_DTO%":[],"adj_OR%":[],"adj_DOR%":[],"adj_FTR":[],"adj_DFTR":[],"adj_FIC":[],"adj_DFIC":[],"GP":0}
         if (seasonDict[row["Away"]]["GP"] >= 5 and seasonDict[row["Home"]]["GP"] >= 5):
-            A.addCellToRow(row["Season"])
             A.addCellToRow(row["Date"])
             A.addCellToRow(row["Home"])
             A.addCellToRow(row["Away"])
@@ -264,14 +260,15 @@ def preMatchAverages(league):
             # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DFIC"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
             # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DFIC"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
 
-            A.addCellToRow(row["Home ML"])
-            A.addCellToRow(row["Away ML"])
-            A.addCellToRow(row["Favorite"])
-            A.addCellToRow(row["Spread"])
-            A.addCellToRow(row["Home Spread Odds"])
-            A.addCellToRow(row["Away Spread Odds"])
+            A.addCellToRow(row["Open Spread"])
+            A.addCellToRow(row["Home Open Spread Odds"])
+            A.addCellToRow(row["Away Open Spread Odds"])
+            A.addCellToRow(row["Close Spread"])
+            A.addCellToRow(row["Home Close Spread Odds"])
+            A.addCellToRow(row["Away Close Spread Odds"])
             A.addCellToRow(row["Home Score"])
             A.addCellToRow(row["Away Score"])
+            A.addCellToRow(row["Away Score"] - row["Home Score"])
             A.appendRow()
         seasonDict[row["Home"]]["ORtg"].append(row["h_ORtg"])
         seasonDict[row["Away"]]["ORtg"].append(row["a_ORtg"])
@@ -369,18 +366,11 @@ def preMatchAverages(league):
 
 def train_test_split(league):
     data = pd.read_csv("./csv_data/" + league + "/preMatchAverages.csv", encoding = "ISO-8859-1")
-    hw = []
-    for index, row in data.iterrows():
-        if (row["Home Score"] > row["Away Score"]):
-            hw.append(1)
-        else:
-            hw.append(0)
-    data["Home Win"] = hw
     test = False
     trainRows = []
     testRows = []
     for index, row in data.iterrows():
-        if (row["Season"] == "2017/2018"):
+        if (row["Date"].split("-")[0] == "2017" and abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(data.at[index-1,"Date"].split("-")[0]), int(data.at[index-1,"Date"].split("-")[1]), int(data.at[index-1,"Date"].split("-")[2]))).days > 30):
             test = True
         if (test):
             testRows.append(index)
@@ -391,25 +381,22 @@ def train_test_split(league):
 
 def predictions(league):
     predictions = []
-    train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1")
-    test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1")
+    train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1").dropna()
+    test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna()
     xCols = []
     for col in train.columns:
         if (("H_" in col or "A_" in col) and "_GP" not in col):
             xCols.append(col)
-    y_train = train["Home Win"]
+    y_train = train["Actual Spread"]
     scaler = StandardScaler()
     X_train = pd.DataFrame(train, columns = xCols)
     X_train[xCols] = scaler.fit_transform(X_train[xCols])
     X_test = pd.DataFrame(test, columns = xCols)
     X_test[xCols] = scaler.transform(X_test[xCols])
-    model = LogisticRegression(max_iter = 100000, C = 99999999999)
+    model = LinearRegression()
     model.fit(X = X_train, y = y_train)
-    for p in model.predict_proba(X_test):
-        if (model.classes_[1] == 1):
-            predictions.append(p[1])
-        else:
-            predictions.append(p[0])
-    test["Home Prob"] = predictions
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Predicted Spread"] = predictions
 
     test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
