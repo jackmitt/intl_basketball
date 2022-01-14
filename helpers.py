@@ -204,19 +204,19 @@ def standardizeTeamName(name, league):
             return ("BER")
         elif ("bg goettingen" in name):
             return ("GOE")
-        elif ("bbc bayreuth" in name):
+        elif ("bayreuth" in name):
             return ("BAYR")
-        elif ("tsv crailsheim" in name):
+        elif ("crailsheim" in name):
             return ("CRA")
         elif ("artland" in name):
             return ("ART")
         elif ("tubingen" in name):
             return ("TUB")
-        elif ("ludwigsburg" in name):
+        elif ("ludwigsburg" in name or "riesen" in name):
             return ("LUD")
         elif ("telekom baskets bonn" in name):
             return ("TBB")
-        elif ("bayern munchen" in name):
+        elif ("bayern" in name):
             return ("BAY")
         elif ("mitteldeutscher bc" in name):
             return ("BC")
@@ -230,13 +230,13 @@ def standardizeTeamName(name, league):
             return ("HAG")
         elif ("tbb trier" in name):
             return ("TRI")
-        elif ("new yorker phantoms" in name):
+        elif ("new yorker phantoms" in name or "braunschweig" in name):
             return ("BLB")
         elif ("ratiopharm ulm" in name):
             return ("RUL")
         elif ("ewe baskets oldenburg" in name):
             return ("EWE")
-        elif ("lti giessen 46ers" in name):
+        elif ("46ers" in name):
             return ("GIE")
         elif ("s.oliver" in name):
             return ("OLI")
@@ -246,9 +246,9 @@ def standardizeTeamName(name, league):
             return ("SCJ")
         elif (name == "gotha"):
             return ("BIG")
-        elif (name == "hamburg"):
+        elif (name == "hamburg" or name == "hamburg towers"):
             return ("HAM")
-        elif ("chemcats" in name):
+        elif ("chemcats" in name or "chemnitz" in name):
             return ("BVC")
         elif ("heidelberg" in name):
             return ("MLP")

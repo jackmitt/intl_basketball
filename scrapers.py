@@ -215,7 +215,7 @@ def realgm(urlRoot, year, month, day):
     browser.close()
 
 def nowgoal(urlRoot, startMonth, league):
-    A = Database(["Date","Home","Away","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","url"])
+    A = Database(["Date","Home","Away","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","url"])
     browser = webdriver.Chrome(executable_path='chromedriver.exe')
     browser.maximize_window()
     if (not exists("./" + league + "_nowgoal_gameUrls.csv")):
@@ -264,6 +264,16 @@ def nowgoal(urlRoot, startMonth, league):
             A.addCellToRow(soup.find_all(class_="o_team")[0].text)
             A.addCellToRow(soup.find_all(class_="o_team")[1].text)
             try:
+                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-2].find_all("td")[1].text)
+                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-2].find_all("td")[2].text)
+                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-1].find_all("td")[1].text)
+                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-1].find_all("td")[2].text)
+            except:
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+            try:
                 bet365 = soup.find(class_="odds-table-bg").find_all("tr")[5]
                 test = float(bet365.find_all("td")[2].find("span").text) * -1
                 test = float(bet365.find_all("td")[2].find("span").text) * -1
@@ -296,6 +306,10 @@ def nowgoal(urlRoot, startMonth, league):
             if (counter % 20 == 1):
                 A.dictToCsv("./csv_data/" + league + "_spreads.csv")
         except:
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)

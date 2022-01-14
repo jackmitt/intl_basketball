@@ -4,9 +4,14 @@ from helpers import Database
 import datetime
 from helpers import standardizeTeamName
 from helpers import monthToInt
+from scipy.stats import t
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LogisticRegression
+from numpy.linalg import inv
+import math
 
 #for oddsportal - obsolete
 def combine_lines_and_stats(league):
@@ -77,7 +82,7 @@ def combine_lines_and_stats(league):
 def combine_spreads_and_stats(league):
     stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
     odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score"])
+    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score"])
     for i, r in stats.iterrows():
         found = False
         print (i)
@@ -105,6 +110,10 @@ def combine_spreads_and_stats(league):
                 A.addCellToRow(r["a_FTR"])
                 A.addCellToRow(r["h_FIC"])
                 A.addCellToRow(r["a_FIC"])
+                A.addCellToRow(row["Home Open ML"])
+                A.addCellToRow(row["Away Open ML"])
+                A.addCellToRow(row["Home Close ML"])
+                A.addCellToRow(row["Away Close ML"])
                 A.addCellToRow(row["Open Spread"])
                 A.addCellToRow(row["Home Open Spread Odds"])
                 A.addCellToRow(row["Away Open Spread Odds"])
@@ -140,12 +149,16 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
             A.appendRow()
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
 def preMatchAverages(league):
     stats = pd.read_csv("./csv_data/" + league + "/combined.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","Actual Spread"])
+    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","Actual Spread"])
     for index, row in stats.iterrows():
         if (index == 0 or abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(stats.at[index-1,"Date"].split("-")[0]), int(stats.at[index-1,"Date"].split("-")[1]), int(stats.at[index-1,"Date"].split("-")[2]))).days > 30):
             seasonDict = {}
@@ -260,6 +273,10 @@ def preMatchAverages(league):
             # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DFIC"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
             # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DFIC"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
 
+            A.addCellToRow(row["Home Open ML"])
+            A.addCellToRow(row["Away Open ML"])
+            A.addCellToRow(row["Home Close ML"])
+            A.addCellToRow(row["Away Close ML"])
             A.addCellToRow(row["Open Spread"])
             A.addCellToRow(row["Home Open Spread Odds"])
             A.addCellToRow(row["Away Open Spread Odds"])
@@ -381,6 +398,118 @@ def train_test_split(league):
 
 def predictions(league):
     predictions = []
+    train_pred = []
+    train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    xCols = []
+    for col in train.columns:
+        if (("H_" in col or "A_" in col) and "_GP" not in col):
+            xCols.append(col)
+    y_train = train["Actual Spread"]
+    y_test = test["Actual Spread"]
+    test_OpenSpreads = test["Open Spread"]
+    test_CloseSpreads = test["Close Spread"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Predicted Spread"] = predictions
+    for p in model.predict(X_train):
+        train_pred.append(p)
+    ones = []
+    for i in range(len(X_train.index)):
+        ones.append(1)
+    X_train["Intercept"] = ones
+    ones = []
+    for i in range(len(X_test.index)):
+        ones.append(1)
+    X_test["Intercept"] = ones
+    tAwayOpen = []
+    tAwayClose = []
+    openCoverProb = []
+    closeCoverProb = []
+    spredd = []
+    for i in range(len(predictions)):
+        sPred = math.sqrt(mean_squared_error(y_train, train_pred) + np.matmul(np.matmul(X_test.to_numpy()[i],mean_squared_error(y_train, train_pred)*inv(np.matmul(np.transpose(X_train.to_numpy()),X_train.to_numpy()))), np.transpose(X_test.to_numpy()[i])))
+        if (predictions[i] < test_OpenSpreads[i]):
+            tAwayOpen.append(abs(predictions[i] - test_OpenSpreads[i])/sPred)
+            openCoverProb.append(t.cdf(x=abs(predictions[i] - test_OpenSpreads[i])/sPred, df=len(y_train) - len(xCols)))
+        else:
+            tAwayOpen.append(0-abs(predictions[i] - test_OpenSpreads[i])/sPred)
+            openCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_OpenSpreads[i])/sPred, df=len(y_train) - len(xCols)))
+        if (predictions[i] < test_CloseSpreads[i]):
+            tAwayClose.append(abs(predictions[i] - test_CloseSpreads[i])/sPred)
+            closeCoverProb.append(t.cdf(x=abs(predictions[i] - test_CloseSpreads[i])/sPred, df=len(y_train) - len(xCols)))
+        else:
+            tAwayClose.append(0-abs(predictions[i] - test_CloseSpreads[i])/sPred)
+            closeCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_CloseSpreads[i])/sPred, df=len(y_train) - len(xCols)))
+        spredd.append(sPred)
+    test["T Away Open"] = tAwayOpen
+    test["T Away Close"] = tAwayClose
+    test["S Pred"] = spredd
+    test["Predict Home Open Cover"] = openCoverProb
+    test["Predict Home Close Cover"] = closeCoverProb
+
+    homeOpenCover = []
+    homeCloseCover = []
+    for index, row in test.iterrows():
+        if (row["Away Score"] - row["Home Score"] < row["Open Spread"]):
+            homeOpenCover.append(1)
+        elif (row["Away Score"] - row["Home Score"] > row["Open Spread"]):
+            homeOpenCover.append(0)
+        else:
+            homeOpenCover.append(np.nan)
+        if (row["Away Score"] - row["Home Score"] < row["Close Spread"]):
+            homeCloseCover.append(1)
+        elif (row["Away Score"] - row["Home Score"] > row["Close Spread"]):
+            homeCloseCover.append(0)
+        else:
+            homeCloseCover.append(np.nan)
+    test["Home Open Cover"] = homeOpenCover
+    test["Home Close Cover"] = homeCloseCover
+    #
+    for x in [train, test]:
+        homeBookRtg = []
+        homeWin = []
+        for index, row in x.iterrows():
+            if (row["Home Open ML"] != 1):
+                homeBookRtg.append(-np.log(row["Home Open ML"] - 1))
+            else:
+                homeBookRtg.append(10)
+            if (row["Home Score"] > row["Away Score"]):
+                homeWin.append(1)
+            else:
+                homeWin.append(0)
+        x["Home Win"] = homeWin
+        x["Home Book Rtg"] = homeBookRtg
+    train = train.dropna()
+    test = test.dropna()
+
+
+    pred = []
+    y_train = train["Home Win"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LogisticRegression(max_iter = 100000, C = 3)
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict_proba(X_test):
+        if (model.classes_[1] == 1):
+            pred.append(p[1])
+        else:
+            pred.append(p[0])
+    test["Predict Home Win"] = pred
+    test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
+
+def predictionsV2(league):
+    predictions = []
     train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1").dropna()
     test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna()
     xCols = []
@@ -398,5 +527,176 @@ def predictions(league):
     for p in model.predict(X_test):
         predictions.append(p)
     test["Predicted Spread"] = predictions
+
+    dict = {}
+    for i in range(61):
+        dict[str(i - 30) + "_act"] = []
+        dict[str(i - 29.5) + "_act"] = []
+    for index, row in train.iterrows():
+        for i in range(61):
+            if (row["Away Score"] - row["Home Score"] < i-30):
+                dict[str(i - 30) + "_act"].append(1)
+            else:
+                dict[str(i - 30) + "_act"].append(0)
+            if (row["Away Score"] - row["Home Score"] < i-29.5):
+                dict[str(i - 29.5) + "_act"].append(1)
+            else:
+                dict[str(i - 29.5) + "_act"].append(0)
+    for key in dict:
+        train[key] = dict[key]
+
+    dict = {}
+    for i in range(61):
+        dict[str(i - 30) + "_act"] = []
+        dict[str(i - 29.5) + "_act"] = []
+    for index, row in test.iterrows():
+        for i in range(61):
+            if (row["Away Score"] - row["Home Score"] < i-30):
+                dict[str(i - 30) + "_act"].append(1)
+            else:
+                dict[str(i - 30) + "_act"].append(0)
+            if (row["Away Score"] - row["Home Score"] < i-29.5):
+                dict[str(i - 29.5) + "_act"].append(1)
+            else:
+                dict[str(i - 29.5) + "_act"].append(0)
+    for key in dict:
+        test[key] = dict[key]
+
+
+    for i in range(61):
+        for j in [30,29.5]:
+            pred = []
+            y_train = train[str(i-j) + "_act"]
+            scaler = StandardScaler()
+            X_train = pd.DataFrame(train, columns = xCols)
+            X_train[xCols] = scaler.fit_transform(X_train[xCols])
+            X_test = pd.DataFrame(test, columns = xCols)
+            X_test[xCols] = scaler.transform(X_test[xCols])
+            model = LogisticRegression(max_iter = 100000, C = 0.1)
+            model.fit(X = X_train, y = y_train)
+            for p in model.predict_proba(X_test):
+                if (model.classes_[1] == 1):
+                    pred.append(p[1])
+                else:
+                    pred.append(p[0])
+            test[str(i-j) + "_pred"] = pred
+
+    openPred = []
+    closePred = []
+    for index, row in test.iterrows():
+        openPred.append(row[str(row["Open Spread"]).split(".0")[0] + "_pred"])
+        closePred.append(row[str(row["Close Spread"]).split(".0")[0] + "_pred"])
+    test["Predict Home Open Cover"] = openPred
+    test["Predict Home Close Cover"] = closePred
+
+    for x in [train, test]:
+        homeOpenCover = []
+        homeCloseCover = []
+        for index, row in x.iterrows():
+            if (row["Away Score"] - row["Home Score"] < row["Open Spread"]):
+                homeOpenCover.append(1)
+            elif (row["Away Score"] - row["Home Score"] > row["Open Spread"]):
+                homeOpenCover.append(0)
+            else:
+                homeOpenCover.append(np.nan)
+            if (row["Away Score"] - row["Home Score"] < row["Close Spread"]):
+                homeCloseCover.append(1)
+            elif (row["Away Score"] - row["Home Score"] > row["Close Spread"]):
+                homeCloseCover.append(0)
+            else:
+                homeCloseCover.append(np.nan)
+        x["Home Open Cover"] = homeOpenCover
+        x["Home Close Cover"] = homeCloseCover
+    train = train.dropna()
+    test = test.dropna()
+
+    test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
+
+def predictionsV3(league):
+    predictions = []
+    train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1").dropna()
+    test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna()
+    xCols = []
+    for col in train.columns:
+        if (("H_" in col or "A_" in col) and "_GP" not in col):
+            xCols.append(col)
+    y_train = train["Actual Spread"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Predicted Spread"] = predictions
+
+    #
+    modelDict = {}
+    for col in xCols:
+        modelDict[col] = LinearRegression(fit_intercept = False).fit(X = train["Open Spread"].to_numpy().reshape(-1,1), y = train[col].to_numpy().reshape(-1,1))
+    #
+    dict = {}
+    for index, row in train.iterrows():
+        for col in xCols:
+            feature = train.at[index, "Open Spread"]
+            if (col + "_above_expectation" not in dict):
+                dict[col + "_above_expectation"] = []
+            dict[col + "_above_expectation"].append(train.at[index, col] - modelDict[col].predict(feature.reshape(1,-1))[0][0])
+    for key in dict:
+        train[key] = dict[key]
+    #
+    dict = {}
+    for index, row in test.iterrows():
+        for col in xCols:
+            feature = test.at[index, "Open Spread"]
+            if (col + "_above_expectation" not in dict):
+                dict[col + "_above_expectation"] = []
+            dict[col + "_above_expectation"].append(test.at[index, col] - modelDict[col].predict(feature.reshape(1,-1))[0][0])
+    for key in dict:
+        test[key] = dict[key]
+
+
+    for x in [train, test]:
+        homeOpenCover = []
+        homeCloseCover = []
+        for index, row in x.iterrows():
+            if (row["Away Score"] - row["Home Score"] < row["Open Spread"]):
+                homeOpenCover.append(1)
+            elif (row["Away Score"] - row["Home Score"] > row["Open Spread"]):
+                homeOpenCover.append(0)
+            else:
+                homeOpenCover.append(np.nan)
+            if (row["Away Score"] - row["Home Score"] < row["Close Spread"]):
+                homeCloseCover.append(1)
+            elif (row["Away Score"] - row["Home Score"] > row["Close Spread"]):
+                homeCloseCover.append(0)
+            else:
+                homeCloseCover.append(np.nan)
+        x["Home Open Cover"] = homeOpenCover
+        x["Home Close Cover"] = homeCloseCover
+    train = train.dropna()
+    test = test.dropna()
+
+    pred = []
+    y_train = train["Home Open Cover"]
+    scaler = StandardScaler()
+    xCols = []
+    for col in train.columns:
+        if ("_above_expectation" in col):
+            xCols.append(col)
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LogisticRegression(max_iter = 100000, C = 1)
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict_proba(X_test):
+        if (model.classes_[1] == 1):
+            pred.append(p[1])
+        else:
+            pred.append(p[0])
+    test["Predict Home Open Cover"] = pred
 
     test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)

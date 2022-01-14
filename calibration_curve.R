@@ -4,7 +4,7 @@ library(ggplot2)
 
 data = read.csv("C:/Users/JackMitt/Documents/intl_basketball/csv_data/Spain/predictions.csv")
 
-ah = data %>% select(Home.Win, Home.Prob) %>% drop_na() %>% arrange(Home.Prob)
+ah = data %>% select(Home.Win, Predict.Home.Win) %>% drop_na() %>% arrange(Predict.Home.Win)
 
 index = seq(1, nrow(ah))
 
@@ -34,7 +34,7 @@ rrrrrr = rrrrr[(trunc(length(rrrrr)/2)+1):length(rrrrr)]
 eleven = rrrrr[0+1:trunc(length(rrrrr)/2)]
 twelve = rrrrr[(trunc(length(rrrrr)/2)+1):trunc(length(rrrrr))]
 
-predictedRate = c(mean(ah$Home.Prob[one]),mean(ah$Home.Prob[two]),mean(ah$Home.Prob[three]),mean(ah$Home.Prob[four]),mean(ah$Home.Prob[five]),mean(ah$Home.Prob[six]),mean(ah$Home.Prob[seven]),mean(ah$Home.Prob[eight]),mean(ah$Home.Prob[nine]),mean(ah$Home.Prob[ten]),mean(ah$Home.Prob[eleven]),mean(ah$Home.Prob[twelve]))
+predictedRate = c(mean(ah$Predict.Home.Win[one]),mean(ah$Predict.Home.Win[two]),mean(ah$Predict.Home.Win[three]),mean(ah$Predict.Home.Win[four]),mean(ah$Predict.Home.Win[five]),mean(ah$Predict.Home.Win[six]),mean(ah$Predict.Home.Win[seven]),mean(ah$Predict.Home.Win[eight]),mean(ah$Predict.Home.Win[nine]),mean(ah$Predict.Home.Win[ten]),mean(ah$Predict.Home.Win[eleven]),mean(ah$Predict.Home.Win[twelve]))
 actualRate = c(mean(ah$Home.Win[one]),mean(ah$Home.Win[two]),mean(ah$Home.Win[three]),mean(ah$Home.Win[four]),mean(ah$Home.Win[five]),mean(ah$Home.Win[six]),mean(ah$Home.Win[seven]),mean(ah$Home.Win[eight]),mean(ah$Home.Win[nine]),mean(ah$Home.Win[ten]),mean(ah$Home.Win[eleven]),mean(ah$Home.Win[twelve]))
 n = c(length(ah$Home.Win[one]),length(ah$Home.Win[two]),length(ah$Home.Win[three]),length(ah$Home.Win[four]),length(ah$Home.Win[five]),length(ah$Home.Win[six]),length(ah$Home.Win[seven]),length(ah$Home.Win[eight]),length(ah$Home.Win[nine]),length(ah$Home.Win[ten]),length(ah$Home.Win[eleven]),length(ah$Home.Win[twelve]))
 ahdf = data.frame(predictedRate,actualRate,n)
