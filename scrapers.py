@@ -219,32 +219,143 @@ def nowgoal(urlRoot, startMonth, league):
     browser = webdriver.Chrome(executable_path='chromedriver.exe')
     browser.maximize_window()
     if (not exists("./" + league + "_nowgoal_gameUrls.csv")):
-        rootier = "https://basketball.nowgoal5.com/Normal/"
-        league_num = urlRoot.split("/")[5]
-        curDate = datetime.date(2014, startMonth, 1)
-        curSeason = "2014-2015"
-        gameUrls = []
-        while (curDate < datetime.date(2022, 1, 1)):
-            try:
-                browser.get(curDate.strftime(rootier + curSeason + "/" + league_num + "?y=%Y&m=%m"))
-            except:
-                time.sleep(300)
-                nowgoal(urlRoot, startMonth, league)
-            soup = BeautifulSoup(browser.page_source, 'html.parser')
-            if (len(soup.find_all(class_="odds-icon1x2 r0")) > 0):
-                for t in soup.find_all(class_="odds-icon1x2 r0"):
-                    gameUrls.append(t['href'])
-                needToUpdate = True
-            else:
-                if (needToUpdate):
-                    curSeason = str(curDate.year) + "-" + str(curDate.year + 1)
-                    needToUpdate = False
-            curDate = curDate + relativedelta(months=+1)
-        save = {}
-        save["urls"] = gameUrls
-        dfFinal = pd.DataFrame.from_dict(save)
-        dfFinal = dfFinal.drop_duplicates()
-        dfFinal.to_csv('./' + league + '_nowgoal_gameUrls.csv', index = False)
+        if (league != "Euroleague"):
+            rootier = "https://basketball.nowgoal5.com/Normal/"
+            league_num = urlRoot.split("/")[5]
+            curDate = datetime.date(2014, startMonth, 1)
+            curSeason = "2014-2015"
+            gameUrls = []
+            while (curDate < datetime.date(2022, 1, 1)):
+                try:
+                    browser.get(curDate.strftime(rootier + curSeason + "/" + league_num + "?y=%Y&m=%m"))
+                except:
+                    time.sleep(300)
+                    nowgoal(urlRoot, startMonth, league)
+                soup = BeautifulSoup(browser.page_source, 'html.parser')
+                if (len(soup.find_all(class_="odds-icon1x2 r0")) > 0):
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    needToUpdate = True
+                else:
+                    if (needToUpdate):
+                        curSeason = str(curDate.year) + "-" + str(curDate.year + 1)
+                        needToUpdate = False
+                curDate = curDate + relativedelta(months=+1)
+            save = {}
+            save["urls"] = gameUrls
+            dfFinal = pd.DataFrame.from_dict(save)
+            dfFinal = dfFinal.drop_duplicates()
+            dfFinal.to_csv('./' + league + '_nowgoal_gameUrls.csv', index = False)
+        else:
+            rootier = "https://basketball.nowgoal5.com/CupMatch/"
+            league_num = urlRoot.split("/")[5]
+            curDate = datetime.date(2014, startMonth, 1)
+            seasons = ["2014-2015","2015-2016","2016-2017","2017-2018","2018-2019","2019-2020","2020-2021"]
+            gameUrls = []
+            for curSeason in seasons:
+                browser.get(curDate.strftime(rootier + curSeason + "/" + league_num))
+                if (curSeason == "2014-2015"):
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[4]").click()
+                    time.sleep(1)
+                    for i in range(2, 6):
+                        element = browser.find_element_by_xpath("//*[@id='showRound']/table/tbody/tr/td[" + str(i) + "]")
+                        element.click()
+                        time.sleep(1)
+                        soup = BeautifulSoup(browser.page_source, 'html.parser')
+                        for t in soup.find_all(class_="odds-icon1x2 r0"):
+                            gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[1]").click()
+                    time.sleep(1)
+                    for i in range(2, 4):
+                        element = browser.find_element_by_xpath("//*[@id='showRound']/table/tbody/tr/td[" + str(i) + "]")
+                        element.click()
+                        time.sleep(1)
+                        soup = BeautifulSoup(browser.page_source, 'html.parser')
+                        for t in soup.find_all(class_="odds-icon1x2 r0"):
+                            gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[2]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[3]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[4]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[3]/td[1]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                elif (curSeason == "2019-2020"):
+                    browser.find_element_by_xpath("//*[@id='showRound']/table/tbody/tr/td[2]").click()
+                    time.sleep(1)
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                elif(curSeason == "2015-2016"):
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[1]").click()
+                    time.sleep(1)
+                    for i in range(2, 6):
+                        element = browser.find_element_by_xpath("//*[@id='showRound']/table/tbody/tr/td[" + str(i) + "]")
+                        element.click()
+                        time.sleep(1)
+                        soup = BeautifulSoup(browser.page_source, 'html.parser')
+                        for t in soup.find_all(class_="odds-icon1x2 r0"):
+                            gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[2]").click()
+                    time.sleep(1)
+                    for i in range(2, 4):
+                        element = browser.find_element_by_xpath("//*[@id='showRound']/table/tbody/tr/td[" + str(i) + "]")
+                        element.click()
+                        time.sleep(1)
+                        soup = BeautifulSoup(browser.page_source, 'html.parser')
+                        for t in soup.find_all(class_="odds-icon1x2 r0"):
+                            gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[3]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[4]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[1]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[2]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                else:
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[1]").click()
+                    time.sleep(1)
+                    element = browser.find_element_by_xpath("//*[@id='showRound']/table/tbody/tr/td[2]")
+                    element.click()
+                    time.sleep(1)
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[2]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[3]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[1]/td[4]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+                    browser.find_element_by_xpath("//*[@id='qualifyDiv']/table/tbody/tr[2]/td[1]").click()
+                    soup = BeautifulSoup(browser.page_source, 'html.parser')
+                    for t in soup.find_all(class_="odds-icon1x2 r0"):
+                        gameUrls.append(t['href'])
+
     else:
         gameUrls = pd.read_csv('./' + league + '_nowgoal_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
     #
