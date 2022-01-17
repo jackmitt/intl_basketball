@@ -22,8 +22,10 @@ from helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
 
-def kellyStake(p, decOdds):
-    return (p - (1 - p)/(decOdds - 1))
+def kellyStake(p, decOdds, kellyDiv):
+    if ((p - (1 - p)/(decOdds - 1)) / kellyDiv > 0.05):
+        return (0.05)
+    return ((p - (1 - p)/(decOdds - 1)) / kellyDiv)
 
 def scrapePinnacle(league):
     A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
@@ -33,6 +35,10 @@ def scrapePinnacle(league):
         browser.get("https://www.pinnacle.com/en/basketball/germany-bundesliga/matchups/#period:0")
     if (league == "Spain"):
         browser.get("https://www.pinnacle.com/en/basketball/spain-acb/matchups#period:0")
+    if (league == "Italy"):
+        browser.get("https://www.pinnacle.com/en/basketball/italy-lega-a/matchups#period:0")
+    if (league == "France"):
+        browser.get("https://www.pinnacle.com/en/basketball/france-championnat-pro-a/matchups#period:0")
     time.sleep(5)
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     main = soup.find(class_="contentBlock square")
@@ -67,6 +73,10 @@ def updateSeasonStats(league, last_date):
         urlRoot = "https://basketball.realgm.com/international/league/15/German-BBL/scores/"
     elif (league == "Spain"):
         urlRoot = "https://basketball.realgm.com/international/league/4/Spanish-ACB/scores/"
+    elif (league == "Italy"):
+        urlRoot = "https://basketball.realgm.com/international/league/6/Italian-Lega-Basket-Serie-A/scores/"
+    elif (league == "France"):
+        urlRoot = "https://basketball.realgm.com/international/league/12/French-Jeep-Elite/scores/"
     while (curDate < datetime.date.today()):
         browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
         soup = BeautifulSoup(browser.page_source, 'html.parser')
@@ -102,8 +112,14 @@ def updateSeasonStats(league, last_date):
         A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
         A.addCellToRow(game)
         A.appendRow()
+    if (not exists("./csv_data/" + league + "/Current Season/gameStats.csv")):
+        A.dictToCsv("./csv_data/" + league + "/Current Season/gameStats.csv")
+    else:
+        stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1")
+        temp = A.getDataFrame()
+        stats = stats.append(temp)
+        stats.to_csv("./csv_data/" + league + "/Current Season/gameStats.csv", index = False)
 
-    A.dictToCsv("./csv_data/" + league + "/Current Season/gameStats.csv")
     browser.close()
 
 def bet(league, pinnacleLines):
@@ -210,12 +226,16 @@ def bet(league, pinnacleLines):
 
     predictions = []
     train_pred = []
-    train = pd.read_csv("./csv_data/" + league + "/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    aggLeagues = ["Italy","Germany","France"]
+    for l in aggLeagues:
+        train = train.append(pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True), ignore_index = True)
     xCols = []
     for col in train.columns:
         if (("H_" in col or "A_" in col) and "_GP" not in col):
             xCols.append(col)
     y_train = train["Actual Spread"]
+    test_OpenSpreads = test["Spread"]
     scaler = StandardScaler()
     X_train = pd.DataFrame(train, columns = xCols)
     X_train[xCols] = scaler.fit_transform(X_train[xCols])
@@ -226,87 +246,56 @@ def bet(league, pinnacleLines):
     for p in model.predict(X_test):
         predictions.append(p)
     test["Predicted Spread"] = predictions
-
-
-    homeWin = []
-    for index, row in train.iterrows():
-        if (row["Home Score"] > row["Away Score"]):
-            homeWin.append(1)
+    for p in model.predict(X_train):
+        train_pred.append(p)
+    ones = []
+    for i in range(len(X_train.index)):
+        ones.append(1)
+    X_train["Intercept"] = ones
+    ones = []
+    for i in range(len(X_test.index)):
+        ones.append(1)
+    X_test["Intercept"] = ones
+    tAwayOpen = []
+    openCoverProb = []
+    spredd = []
+    for i in range(len(predictions)):
+        sPred = math.sqrt(mean_squared_error(y_train, train_pred) + np.matmul(np.matmul(X_test.to_numpy()[i],mean_squared_error(y_train, train_pred)*inv(np.matmul(np.transpose(X_train.to_numpy()),X_train.to_numpy()))), np.transpose(X_test.to_numpy()[i])))
+        if (predictions[i] < float(test_OpenSpreads[i])):
+            tAwayOpen.append(abs(predictions[i] - float(test_OpenSpreads[i]))/sPred)
+            openCoverProb.append(t.cdf(x=abs(predictions[i] - float(test_OpenSpreads[i]))/sPred, df=len(y_train) - len(xCols)))
         else:
-            homeWin.append(0)
-    train["Home Win"] = homeWin
-
-    ###############For Spain, C = 3; KellyDiv = 6
-    pred = []
-    y_train = train["Home Win"]
-    scaler = StandardScaler()
-    X_train = pd.DataFrame(train, columns = xCols)
-    X_train[xCols] = scaler.fit_transform(X_train[xCols])
-    X_test = pd.DataFrame(test, columns = xCols)
-    X_test[xCols] = scaler.transform(X_test[xCols])
-    model = LogisticRegression(max_iter = 100000, C = 3)
-    model.fit(X = X_train, y = y_train)
-    for p in model.predict_proba(X_test):
-        if (model.classes_[1] == 1):
-            pred.append(p[1])
-        else:
-            pred.append(p[0])
-    test["Predict Home Win"] = pred
+            tAwayOpen.append(0-abs(predictions[i] - float(test_OpenSpreads[i]))/sPred)
+            openCoverProb.append(t.cdf(x=0-abs(predictions[i] - float(test_OpenSpreads[i]))/sPred, df=len(y_train) - len(xCols)))
+        spredd.append(sPred)
+    test["T Away"] = tAwayOpen
+    test["S Pred"] = spredd
+    test["Predict Home Cover"] = openCoverProb
 
     bankroll = 20000
     bet = []
     amount = []
+    kellyDiv = 1
     for index, row in test.iterrows():
-        if (league == "Germany"):
-            if (abs(row["Predicted Spread"] - float(row["Spread"])) < 2):
-                bet.append(np.nan)
-                amount.append(np.nan)
-                continue
-            elif (abs(row["Predicted Spread"] - float(row["Spread"])) < 5):
-                bet.append(np.nan)
-                amount.append(np.nan)
-                continue
-            elif (abs(row["Predicted Spread"] - float(row["Spread"])) < 7.5):
-                if (row["Predicted Spread"] < float(row["Spread"])):
-                    if (kellyStake(0.531, float(row["Home Spread Odds"])) > 0):
-                        bet.append(row["Spread"])
-                        amount.append(bankroll*kellyStake(0.531, float(row["Home Spread Odds"])))
-                    else:
-                        bet.append(np.nan)
-                        amount.append(np.nan)
-                else:
-                    if (kellyStake(0.531, float(row["Away Spread Odds"])) > 0):
-                        bet.append(0-float(row["Spread"]))
-                        amount.append(bankroll*kellyStake(0.531, float(row["Away Spread Odds"])))
-                    else:
-                        bet.append(np.nan)
-                        amount.append(np.nan)
-            elif (abs(row["Predicted Spread"] - float(row["Spread"])) < 12.5):
-                if (row["Predicted Spread"] < float(row["Spread"])):
-                    if (kellyStake(0.5405, float(row["Home Spread Odds"])) > 0):
-                        bet.append(row["Spread"])
-                        amount.append(bankroll*kellyStake(0.5405, float(row["Home Spread Odds"])))
-                    else:
-                        bet.append(np.nan)
-                        amount.append(np.nan)
-                else:
-                    if (kellyStake(0.5405, float(row["Away Spread Odds"])) > 0):
-                        bet.append(0-float(row["Spread"]))
-                        amount.append(bankroll*kellyStake(0.5405, float(row["Away Spread Odds"])))
-                    else:
-                        bet.append(np.nan)
-                        amount.append(np.nan)
-        if (league == "Spain"):
-            kellyDiv = 6
-            if (1 - row["Predict Home Win"] > 1 / float(row["Away ML"]) and 1 - row["Predict Home Win"] - 1 / float(row["Away ML"]) < 0.375):
-                bet.append(float(row["Away ML"]))
-                amount.append(bankroll * kellyStake(1 - row["Predict Home Win"], float(row["Away ML"])) / kellyDiv)
-            else:
-                bet.append(np.nan)
-                amount.append(np.nan)
+        if (abs(row["Predicted Spread"] - float(row["Spread"])) < 5):
+            bet.append(np.nan)
+            amount.append(np.nan)
+            continue
+        elif (row["Predict Home Cover"] > 1 / float(row["Home Spread Odds"])):
+            bet.append(row["Spread"])
+            amount.append(bankroll * kellyStake(row["Predict Home Cover"], float(row["Home Spread Odds"]), kellyDiv))
+        elif (1 - row["Predict Home Cover"] > 1 / float(row["Away Spread Odds"])):
+            bet.append(0-float(float(row["Spread"])))
+            amount.append(bankroll * kellyStake(1-row["Predict Home Cover"], float(row["Away Spread Odds"]), kellyDiv))
+        else:
+            bet.append(np.nan)
+            amount.append(np.nan)
     test["Bet"] = bet
     test["Amount"] = amount
-    test.to_csv("./csv_data/" + league + "/Current Season/bets.csv", index = False)
+    curBets = pd.read_csv("./csv_data/bets.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    curBets = curBets.append(test)
+    curBets.to_csv("./csv_data/bets.csv", index = False)
 
-#updateSeasonStats("Germany", datetime.date(2021, 9, 22))
-bet("Spain", scrapePinnacle("Spain"))
+
+#updateSeasonStats("France", datetime.date(2021, 9, 30))
+bet("France", scrapePinnacle("France"))

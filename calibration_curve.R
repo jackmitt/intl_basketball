@@ -4,7 +4,7 @@ library(ggplot2)
 
 data = read.csv("C:/Users/JackMitt/Documents/intl_basketball/csv_data/Spain/predictions.csv")
 
-ah = data %>% select(Home.Win, Predict.Home.Win) %>% drop_na() %>% arrange(Predict.Home.Win)
+ah = data %>% select(Home.Open.Cover, Predict.Home.Open.Cover) %>% drop_na() %>% arrange(Predict.Home.Open.Cover)
 
 index = seq(1, nrow(ah))
 
@@ -34,9 +34,9 @@ rrrrrr = rrrrr[(trunc(length(rrrrr)/2)+1):length(rrrrr)]
 eleven = rrrrr[0+1:trunc(length(rrrrr)/2)]
 twelve = rrrrr[(trunc(length(rrrrr)/2)+1):trunc(length(rrrrr))]
 
-predictedRate = c(mean(ah$Predict.Home.Win[one]),mean(ah$Predict.Home.Win[two]),mean(ah$Predict.Home.Win[three]),mean(ah$Predict.Home.Win[four]),mean(ah$Predict.Home.Win[five]),mean(ah$Predict.Home.Win[six]),mean(ah$Predict.Home.Win[seven]),mean(ah$Predict.Home.Win[eight]),mean(ah$Predict.Home.Win[nine]),mean(ah$Predict.Home.Win[ten]),mean(ah$Predict.Home.Win[eleven]),mean(ah$Predict.Home.Win[twelve]))
-actualRate = c(mean(ah$Home.Win[one]),mean(ah$Home.Win[two]),mean(ah$Home.Win[three]),mean(ah$Home.Win[four]),mean(ah$Home.Win[five]),mean(ah$Home.Win[six]),mean(ah$Home.Win[seven]),mean(ah$Home.Win[eight]),mean(ah$Home.Win[nine]),mean(ah$Home.Win[ten]),mean(ah$Home.Win[eleven]),mean(ah$Home.Win[twelve]))
-n = c(length(ah$Home.Win[one]),length(ah$Home.Win[two]),length(ah$Home.Win[three]),length(ah$Home.Win[four]),length(ah$Home.Win[five]),length(ah$Home.Win[six]),length(ah$Home.Win[seven]),length(ah$Home.Win[eight]),length(ah$Home.Win[nine]),length(ah$Home.Win[ten]),length(ah$Home.Win[eleven]),length(ah$Home.Win[twelve]))
+predictedRate = c(mean(ah$Predict.Home.Open.Cover[one]),mean(ah$Predict.Home.Open.Cover[two]),mean(ah$Predict.Home.Open.Cover[three]),mean(ah$Predict.Home.Open.Cover[four]),mean(ah$Predict.Home.Open.Cover[five]),mean(ah$Predict.Home.Open.Cover[six]),mean(ah$Predict.Home.Open.Cover[seven]),mean(ah$Predict.Home.Open.Cover[eight]),mean(ah$Predict.Home.Open.Cover[nine]),mean(ah$Predict.Home.Open.Cover[ten]),mean(ah$Predict.Home.Open.Cover[eleven]),mean(ah$Predict.Home.Open.Cover[twelve]))
+actualRate = c(mean(ah$Home.Open.Cover[one]),mean(ah$Home.Open.Cover[two]),mean(ah$Home.Open.Cover[three]),mean(ah$Home.Open.Cover[four]),mean(ah$Home.Open.Cover[five]),mean(ah$Home.Open.Cover[six]),mean(ah$Home.Open.Cover[seven]),mean(ah$Home.Open.Cover[eight]),mean(ah$Home.Open.Cover[nine]),mean(ah$Home.Open.Cover[ten]),mean(ah$Home.Open.Cover[eleven]),mean(ah$Home.Open.Cover[twelve]))
+n = c(length(ah$Home.Open.Cover[one]),length(ah$Home.Open.Cover[two]),length(ah$Home.Open.Cover[three]),length(ah$Home.Open.Cover[four]),length(ah$Home.Open.Cover[five]),length(ah$Home.Open.Cover[six]),length(ah$Home.Open.Cover[seven]),length(ah$Home.Open.Cover[eight]),length(ah$Home.Open.Cover[nine]),length(ah$Home.Open.Cover[ten]),length(ah$Home.Open.Cover[eleven]),length(ah$Home.Open.Cover[twelve]))
 ahdf = data.frame(predictedRate,actualRate,n)
 
 png(file="C:/Users/JackMitt/Documents/intl_basketball/csv_data/Spain/Calibration_Curve.png")

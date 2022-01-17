@@ -8,8 +8,10 @@ def amToDec(odds):
     else:
         return (100/abs(odds) + 1)
 
-def kellyStake(p, decOdds):
-    return (p - (1 - p)/(decOdds - 1))
+def kellyStake(p, decOdds, kellyDiv):
+    if ((p - (1 - p)/(decOdds - 1)) / kellyDiv > 0.05):
+        return (0.05)
+    return ((p - (1 - p)/(decOdds - 1)) / kellyDiv)
 
 def simulateKellyBets(bankroll, kellyDiv, lineType, league):
     pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
@@ -24,28 +26,33 @@ def simulateKellyBets(bankroll, kellyDiv, lineType, league):
             actEdge.append(np.nan)
             continue
         if (row["Predict Home Win"] > 1 / row["Home " + lineType + " ML"]):
-            myEdge.append(np.nan)
-            actEdge.append(np.nan)
-            continue
+            if (row["Predict Home Win"] - 1 / row["Home " + lineType + " ML"] < 0.1):
+                myEdge.append(np.nan)
+                actEdge.append(np.nan)
+                continue
             totalBets += 1
             myEdge.append(row["Predict Home Win"] - 1 / row["Home " + lineType + " ML"])
             actEdge.append(row["Home Win"] - 1 / row["Home " + lineType + " ML"])
             if (row["Home Win"] == 1):
-                bankroll += bankroll * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"]) * (row["Home " + lineType + " ML"] - 1) / kellyDiv
-                netSum += baseBR * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"]) * (row["Home " + lineType + " ML"] - 1) / kellyDiv
+                bankroll += bankroll * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"], kellyDiv) * (row["Home " + lineType + " ML"] - 1)
+                netSum += baseBR * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"], kellyDiv) * (row["Home " + lineType + " ML"] - 1)
             elif (row["Home Win"] == 0):
-                bankroll -= bankroll * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"]) / kellyDiv
-                netSum -= baseBR * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"]) / kellyDiv
-        elif (1 - row["Predict Home Win"] > 1 / row["Away " + lineType + " ML"] and 1 - row["Predict Home Win"] - 1 / row["Away " + lineType + " ML"] < 0.375):
+                bankroll -= bankroll * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"], kellyDiv)
+                netSum -= baseBR * kellyStake(row["Predict Home Win"], row["Home " + lineType + " ML"], kellyDiv)
+        elif (1 - row["Predict Home Win"] > 1 / row["Away " + lineType + " ML"]):
+            if (1 - row["Predict Home Win"] - 1 / row["Away " + lineType + " ML"] < 0.1):
+                myEdge.append(np.nan)
+                actEdge.append(np.nan)
+                continue
             totalBets += 1
             myEdge.append(1 - row["Predict Home Win"] - 1 / row["Away " + lineType + " ML"])
             actEdge.append(1 - row["Home Win"] - 1 / row["Away " + lineType + " ML"])
             if (row["Home Win"] == 0):
-                bankroll += bankroll * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"]) * (row["Away " + lineType + " ML"] - 1) / kellyDiv
-                netSum += baseBR * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"]) * (row["Away " + lineType + " ML"] - 1) / kellyDiv
+                bankroll += bankroll * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"], kellyDiv) * (row["Away " + lineType + " ML"] - 1)
+                netSum += baseBR * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"], kellyDiv) * (row["Away " + lineType + " ML"] - 1)
             elif (row["Home Win"] == 1):
-                bankroll -= bankroll * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"]) / kellyDiv
-                netSum -= baseBR * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"]) / kellyDiv
+                bankroll -= bankroll * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"], kellyDiv)
+                netSum -= baseBR * kellyStake(1 - row["Predict Home Win"], row["Away " + lineType + " ML"], kellyDiv)
         else:
             myEdge.append(np.nan)
             actEdge.append(np.nan)
@@ -387,29 +394,30 @@ def kellySpreadBets(bankroll, kellyDiv, lineType, league):
     actEdge = []
     totalBets = 0
     for index, row in pred.iterrows():
-        if (row["Predict Home " + lineType + " Cover"] > 1 / row["Home " + lineType + " Spread Odds"]):
+        if (abs(row["Predicted Spread"] - row["Open Spread"]) < 5):
             myEdge.append(np.nan)
             actEdge.append(np.nan)
             continue
+        elif (row["Predict Home " + lineType + " Cover"] > 1 / row["Home " + lineType + " Spread Odds"]):
             totalBets += 1
             myEdge.append(row["Predict Home " + lineType + " Cover"] - 1 / row["Home " + lineType + " Spread Odds"])
             actEdge.append(row["Home " + lineType + " Cover"] - 1 / row["Home " + lineType + " Spread Odds"])
             if (row["Home " + lineType + " Cover"] == 1):
-                bankroll += bankroll * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"]) * (row["Home " + lineType + " Spread Odds"] - 1) / kellyDiv
-                netSum += baseBR * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"]) * (row["Home " + lineType + " Spread Odds"] - 1) / kellyDiv
+                bankroll += bankroll * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"], kellyDiv) * (row["Home " + lineType + " Spread Odds"] - 1)
+                netSum += baseBR * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"], kellyDiv) * (row["Home " + lineType + " Spread Odds"] - 1)
             elif (row["Home " + lineType + " Cover"] == 0):
-                bankroll -= bankroll * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"]) / kellyDiv
-                netSum -= baseBR * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"]) / kellyDiv
+                bankroll -= bankroll * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"], kellyDiv)
+                netSum -= baseBR * kellyStake(row["Predict Home " + lineType + " Cover"], row["Home " + lineType + " Spread Odds"], kellyDiv)
         elif (1 - row["Predict Home " + lineType + " Cover"] > 1 / row["Away " + lineType + " Spread Odds"]):
             totalBets += 1
             myEdge.append(1 - row["Predict Home " + lineType + " Cover"] - 1 / row["Away " + lineType + " Spread Odds"])
             actEdge.append(1 - row["Home " + lineType + " Cover"] - 1 / row["Away " + lineType + " Spread Odds"])
             if (row["Home " + lineType + " Cover"] == 0):
-                bankroll += bankroll * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"]) * (row["Away " + lineType + " Spread Odds"] - 1) / kellyDiv
-                netSum += baseBR * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"]) * (row["Away " + lineType + " Spread Odds"] - 1) / kellyDiv
+                bankroll += bankroll * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"], kellyDiv) * (row["Away " + lineType + " Spread Odds"] - 1)
+                netSum += baseBR * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"], kellyDiv) * (row["Away " + lineType + " Spread Odds"] - 1)
             elif (row["Home " + lineType + " Cover"] == 1):
-                bankroll -= bankroll * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"]) / kellyDiv
-                netSum -= baseBR * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"]) / kellyDiv
+                bankroll -= bankroll * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"], kellyDiv)
+                netSum -= baseBR * kellyStake(1 - row["Predict Home " + lineType + " Cover"], row["Away " + lineType + " Spread Odds"], kellyDiv)
         else:
             myEdge.append(np.nan)
             actEdge.append(np.nan)
