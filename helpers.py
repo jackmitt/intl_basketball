@@ -503,6 +503,98 @@ def standardizeTeamName(name, league):
         else:
             return ("ERROR: " + name)
 
+    if (league == "VTB"):
+        if ("nymburk" in name):
+            return ("NYM")
+        elif ("lokomotiv" in name):
+            return ("LOK")
+        elif ("khimki" in name):
+            return ("KHI")
+        elif ("avtodor" in name):
+            return ("AVT")
+        elif ("zenit " in name):
+            return ("ZEN")
+        elif ("cska " in name):
+            return ("CSKA")
+        elif ("nilan " in name):
+            return ("NIL")
+        elif ("krylya" in name):
+            return ("KRY")
+        elif ("nizhny" in name):
+            return ("NIZ")
+        elif ("volgograd" in name):
+            return ("OKT")
+        elif ("kazan" in name):
+            return ("UNICS")
+        elif ("kalev cramo" in name):
+            return ("KCT")
+        elif ("riga " in name):
+            return ("RIG")
+        elif ("enisey" in name):
+            return ("ENI")
+        elif ("minsk" in name):
+            return ("MIN")
+        elif (" astana" in name):
+            return ("AST")
+        elif ("tbilisi" in name):
+            return ("VITA")
+        elif ("zastal" in name):
+            return ("ZAS")
+        elif ("parma perm" in name):
+            return ("PARM")
+        else:
+            return ("ERROR: " + name)
+
+    if (league == "Adriatic"):
+        if ("zvezda" in name):
+            return ("ZVE")
+        elif ("levski" in name):
+            return ("LEV")
+        elif ("cibona zagreb" in name):
+            return ("CIB")
+        elif ("cedevita olimpija" in name):
+            return ("OLI")
+        elif (" krka" in name):
+            return ("KRK")
+        elif ("cedevita zagreb" in name):
+            return ("CED")
+        elif ("szolnoki" in name):
+            return ("SZO")
+        elif ("partizan" in name):
+            return ("PAR")
+        elif ("mega vizura" in name):
+            return ("MEG")
+        elif (" skopje" in name):
+            return ("MZT")
+        elif ("buducnost" in name):
+            return ("BUD")
+        elif ("metalac" in name):
+            return ("MET")
+        elif ("zadar" in name):
+            return ("ZAD")
+        elif ("igokea" in name):
+            return ("IGO")
+        elif ("alpos sentjur" in name):
+            return ("SEN")
+        elif ("mega leks" in name):
+            return ("MEGAL")
+        elif ("sutjeska" in name):
+            return ("SUT")
+        elif ("mornar " in name):
+            return ("MOR")
+        elif ("beograd" in name):
+            return ("FMP")
+        elif ("karpos" == name):
+            return ("KAR")
+        elif ("co split" == name):
+            return ("SPL")
+        elif ("borac" == name):
+            return ("BOR")
+        elif ("studentski" in name):
+            return ("STU")
+        else:
+            return ("ERROR: " + name)
+
 def monthToInt(month):
     month = month.lower()
     if ('jan' in month):

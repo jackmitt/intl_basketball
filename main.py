@@ -7,7 +7,7 @@ import prediction_evaluation as pe
 
 #
 #leagues = ["Spain","France","Italy","Germany"]
-leagues = ["Turkey"]
+leagues = ["Spain","France","Italy","Germany","Euroleague","Turkey","VTB", "Adriatic"]
 for league in leagues:
     print (league + "---------------------------------------------------------------------------")
     #dm.combine_spreads_and_stats(league)
@@ -15,16 +15,14 @@ for league in leagues:
     #dm.train_test_split(league)
     #pe.betWithLines(20000, league = league)
     #dm.predictions(league)
-    #dm.aggregateModelPredictions(league)
+    dm.aggregateModelPredictions(league)
     #pe.simulateKellyBets(20000, 1, "Open", league)
     #pe.simulateKellyBets(20000, 1, "Close", league)
     #pe.kellySpreadBets(20000, 1, "Open", league)
     #pe.kellySpreadBets(20000, 1, "Close", league)
     #pe.betWithLines(20000, league)
-    pe.analyzeMyLines(league)
+    #pe.analyzeMyLines(league)
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
-
-
 
 
 
