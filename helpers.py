@@ -363,6 +363,146 @@ def standardizeTeamName(name, league):
         else:
             return ("ERROR: " + name)
 
+    if (league == "Euroleague"):
+        if ("real madrid" in name):
+            return ("RMB")
+        elif ("zalgiris" in name):
+            return ("ZAL")
+        elif ("nizhny" in name):
+            return ("NIZ")
+        elif ("sassari" in name):
+            return ("SAS")
+        elif ("efes pilsen" in name):
+            return ("EFE")
+        elif ("kazan" in name):
+            return ("UNICS")
+        elif ("cedevita zagreb" in name):
+            return ("CED")
+        elif ("unicaja" in name):
+            return ("UNI")
+        elif ("limoges" in name):
+            return ("CSP")
+        elif ("cabi electra" in name):
+            return ("MAC")
+        elif ("alba berlin" in name):
+            return ("BER")
+        elif ("cska moscow" in name):
+            return ("CSKA")
+        elif ("barcelona" in name or name == "barca"):
+            return ("FCB")
+        elif ("bayern " in name):
+            return ("BAY")
+        elif ("ea7-" in name):
+            return ("MIL")
+        elif ("fenerbahce" in name):
+            return ("FEN")
+        elif ("panathinaikos" in name):
+            return ("PAN")
+        elif ("turow zgorzelec" in name):
+            return ("TUR")
+        elif ("baskonia" in name):
+            return ("BASK")
+        elif ("neptunas" in name):
+            return ("NEP")
+        elif ("crvena zvezda" in name):
+            return ("ZVE")
+        elif ("galatasaray" in name):
+            return ("GAL")
+        elif ("valencia" in name):
+            return ("VAL")
+        elif ("olympiacos" in name):
+            return ("OLY")
+        elif ("khimki" in name):
+            return ("KHI")
+        elif ("strasbourg" in name):
+            return ("STR")
+        elif ("pinar karsiyaka" in name):
+            return ("PIN")
+        elif ("lokomotiv" in name):
+            return ("LOK")
+        elif ("zastal" in name):
+            return ("ZAS")
+        elif ("daruss afaka" in name):
+            return ("DBI")
+        elif ("bamberg" in name):
+            return ("BRO")
+        elif ("buducnost" in name):
+            return ("BUD")
+        elif ("pinar karsiyaka" in name):
+            return ("PIN")
+        elif ("gran canaria" in name):
+            return ("GCN")
+        elif ("asvel " in name):
+            return ("LYV")
+        elif ("zenit " in name):
+            return ("ZEN")
+        else:
+            return ("ERROR: " + name)
+
+    if (league == "Turkey"):
+        if ("galatasaray" in name):
+            return ("GAL")
+        elif ("usak sportlif" in name):
+            return ("UUB")
+        elif ("istanbul bb" in name):
+            return ("IBB")
+        elif ("ted ankara" in name):
+            return ("TED")
+        elif ("daruss afaka" in name):
+            return ("DBI")
+        elif ("besiktas" in name):
+            return ("BES")
+        elif ("trabzonspor" in name):
+            return ("TRA")
+        elif ("torku konyaspor" in name):
+            return ("TOR")
+        elif (name == "tofas"):
+            return ("TOF")
+        elif ("edirne" in name):
+            return ("ESK")
+        elif ("gaziantep" in name):
+            return ("GAZ")
+        elif ("efes pilsen" in name):
+            return ("EFE")
+        elif ("pinar karsiyaka" in name):
+            return ("PIN")
+        elif ("banvitspor" in name):
+            return ("BVS")
+        elif ("turk telekom" in name):
+            return ("TUR")
+        elif ("fenerbahce" in name):
+            return ("FEN")
+        elif ("buyukcekmece" in name):
+            return ("DEM")
+        elif ("yesilgiresun" in name):
+            return ("YES")
+        elif ("balikesir buyuksehir" in name):
+            return ("BBB")
+        elif ("eskisehir" in name):
+            return ("ESK")
+        elif ("sakarya " in name):
+            return ("SAK")
+        elif ("bahcesehir" in name):
+            return ("BAHC")
+        elif ("afyon belediye" in name):
+            return ("AFYO")
+        elif ("bursaspor" in name):
+            return ("BURS")
+        elif ("sigortam.net" in name):
+            return ("ITU")
+        elif ("genc ankara" in name):
+            return ("OGK")
+        elif ("fethiye belediye" in name):
+            return ("LOKM")
+        elif ("petkim spor" in name):
+            return ("SOC")
+        elif ("yalova bld" in name):
+            return ("YAL")
+        elif ("maik ze fendi" in name):
+            return ("MERK")
+        else:
+            return ("ERROR: " + name)
+
 def monthToInt(month):
     month = month.lower()
     if ('jan' in month):

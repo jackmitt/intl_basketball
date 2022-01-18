@@ -79,6 +79,15 @@ def combine_lines_and_stats(league):
             A.appendRow()
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
+def checkTeamNames(league):
+    odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
+    for index, row in odds.iterrows():
+        try:
+            if ("ERROR" in standardizeTeamName(row["Home"], league)):
+                print (standardizeTeamName(row["Home"], league))
+        except:
+            continue
+
 #for spreads
 def combine_spreads_and_stats(league):
     stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
