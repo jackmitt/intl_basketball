@@ -177,6 +177,7 @@ def realgm(urlRoot, year, month, day):
     else:
         gameUrls = pd.read_csv('./' + league + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
 
+    print (gameUrls)
     counter = 0
     if (exists("./csv_data/" + league + "_gameStats.csv")):
         A.initDictFromCsv("./csv_data/" + league + "_gameStats.csv")

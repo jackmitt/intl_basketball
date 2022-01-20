@@ -595,6 +595,178 @@ def standardizeTeamName(name, league):
         else:
             return ("ERROR: " + name)
 
+    if (league == "Italy2"):
+        if ("biella" in name):
+            return ("BEI")
+        elif (" torino" in name):
+            return ("TOR")
+        elif (" casale" in name):
+            return ("NCM")
+        elif (" trieste 2004" in name):
+            return ("TRIE")
+        elif (" brescia" in name):
+            return ("BRE")
+        elif (" bpa jesi" in name):
+            return ("JES")
+        elif ("nuovo napoli" in name):
+            return ("NAP")
+        elif (" ferentino" in name):
+            return ("FMC")
+        elif ("agrigento" == name):
+            return ("MON")
+        elif ("assigeco " in name):
+            return ("ASS")
+        elif (" trapani" in name):
+            return ("TRA")
+        elif (" mantova" in name):
+            return ("MAN")
+        elif (" barcellona" in name):
+            return ("SBB")
+        elif ("tezenis verona" in name):
+            return ("VER")
+        elif (" rieti" in name):
+            return ("RIET")
+        elif ("ravenna" in name):
+            return ("RAV")
+        elif ("recanati" in name):
+            return ("REC")
+        elif ("chieti" in name):
+            return ("CHI")
+        elif ("agropoli" in name):
+            return ("AGRO")
+        elif (" matera" in name):
+            return ("OLI")
+        elif (" treviglio" in name):
+            return ("TREV")
+        elif ("virtus roma" == name):
+            return ("ROM")
+        elif ("tortona" in name):
+            return ("TORT")
+        elif (" calabria" in name):
+            return ("VRC")
+        elif (" legnano" in name):
+            return ("LEGN")
+        elif (" roseto" in name):
+            return ("ROS")
+        elif (" treviso" in name):
+            return ("TREVIS")
+        elif (" siena" in name):
+            return ("SANA")
+        elif (" latina" in name):
+            return ("LAT")
+        elif (" imola" in name):
+            return ("IMOL")
+        elif (" ferrara" in name):
+            return ("FER")
+        elif ("ou mina" == name):
+            return ("OME")
+        elif (" scafati" in name):
+            return ("SCAF")
+        elif (" udine" in name):
+            return ("UDIN")
+        elif ("fortezza bologna" in name):
+            return ("BOL")
+        elif (" forli" in name):
+            return ("FOR")
+        elif ("eurobasket roma" == name):
+            return ("EURO")
+        elif ("biancoblu basket bologna" == name):
+            return ("BOLO")
+        elif ("virtus bologna" in name):
+            return ("BOLOG")
+        elif ("bergamo" == name):
+            return ("BERG")
+        elif ("napoli cuore" in name):
+            return ("NAP")
+        elif ("orzi " in name):
+            return ("GAGA")
+        elif (" montegranaro" in name):
+            return ("POD")
+        elif ("fortitudo bologna" in name):
+            return ("BOLOGN")
+        elif (" cento" in name):
+            return ("CENT")
+        elif (" piacenza" in name):
+            return ("PIAC")
+        elif ("virtus cassino" in name):
+            return ("CASS")
+        elif (" piacenza" in name):
+            return ("PIAC")
+        elif (" orlando" in name):
+            return ("ORL")
+        elif (" porta milano" in name):
+            return ("URA")
+        elif (" san severo" in name):
+            return ("SEVE")
+        elif (" caserta" in name):
+            return ("JUV")
+        elif ("basket napoli" == name):
+            return ("NAP")
+        elif ("azzurra roma" in name):
+            return ("STE")
+        elif (" pistoia" in name):
+            return ("PIS")
+        elif ("monferrato" in name):
+            return ("NCMO")
+        elif ("janus " in name):
+            return ("JANUS")
+        elif (" cantu" in name):
+            return ("CAN")
+        elif (" nardo" in name):
+            return ("NARD")
+        elif (" chiusi" in name):
+            return ("CHIU")
+        else:
+            return ("ERROR: " + name)
+
+    if (league == "France2"):
+        if ("le portel" in name):
+            return ("PORT")
+        elif ("hyeres toulon" in name):
+            return ("HYT")
+        elif (name == "lille"):
+            return ("LMBC")
+        elif ("antibes" in name):
+            return ("ANT")
+        elif ("nantes" == name):
+            return ("NAN")
+        elif ("-voltaire" in name):
+            return ("DEN")
+        elif ("souffelweyersheim" in name):
+            return ("SOU")
+        elif ("evreux" == name):
+            return ("ALM")
+        elif ("charleville-" in name):
+            return ("ECM")
+        elif ("orchies" in name):
+            return ("ORC")
+        elif ("chorale " in name):
+            return ("ROA")
+        elif ("poitiers" in name):
+            return ("PB86")
+        elif ("-quentin" in name):
+            return ("SQB")
+        elif ("angers" == name):
+            return ("ANG")
+        elif ("boulazac" == name):
+            return ("BBD")
+        elif ("monaco" == name):
+            return ("ASM")
+        elif ("fos ouest" in name):
+            return ("FOS")
+        elif ("-maurienne" in name):
+            return ("AMSB")
+        elif ("vichy" == name):
+            return ("JAV")
+        elif ("boulogne sur mer" in name):
+            return ("BSM")
+        elif ("bourg-en-bresse" in name):
+            return ("JLB")
+        elif ("saint-chamond" in name):
+            return ("SCB")
+        else:
+            return ("ERROR: " + name)
+
 def monthToInt(month):
     month = month.lower()
     if ('jan' in month):
