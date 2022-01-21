@@ -19,7 +19,6 @@ import numpy as np
 import time
 from os.path import exists
 from helpers import Database
-import datetime
 from dateutil.relativedelta import relativedelta
 
 def kellyStake(p, decOdds, kellyDiv):
@@ -39,27 +38,38 @@ def scrapePinnacle(league):
         browser.get("https://www.pinnacle.com/en/basketball/italy-lega-a/matchups#period:0")
     if (league == "France"):
         browser.get("https://www.pinnacle.com/en/basketball/france-championnat-pro-a/matchups#period:0")
+    if (league == "France2"):
+        browser.get("https://www.pinnacle.com/en/basketball/france-championnat-pro-b/matchups#period:0")
+    if (league == "Germany2"):
+        browser.get("https://www.pinnacle.com/en/basketball/germany-pro-a/matchups#period:0")
+    if (league == "Italy2"):
+        browser.get("https://www.pinnacle.com/en/basketball/italy-lega-nazionale-pallacanestro-gold/matchups#period:0")
+    if (league == "VTB"):
+        browser.get("https://www.pinnacle.com/en/basketball/europe-vtb-united-league/matchups#period:0")
+    #if (league == "Spain2")
+        #
     time.sleep(5)
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     main = soup.find(class_="contentBlock square")
-    games = main.find_all(class_="style_row__21s9o style_row__21_Wa")
-    for game in games:
-        A.addCellToRow(datetime.date.today())
-        if ("ERROR" in standardizeTeamName(game.find_all(class_="ellipsis event-row-participant style_participant__32s23")[0].text, league)):
-            print (standardizeTeamName(game.find_all(class_="ellipsis event-row-participant style_participant__32s23")[0].text, league))
-        if ("ERROR" in standardizeTeamName(game.find_all(class_="ellipsis event-row-participant style_participant__32s23")[1].text, league)):
-            print (standardizeTeamName(game.find_all(class_="ellipsis event-row-participant style_participant__32s23")[1].text, league))
+    for game in main.contents:
+        try:
+            fail = game.find_all("span")[8].text
+            A.addCellToRow(datetime.date.today())
+            if ("ERROR" in standardizeTeamName(game.find_all("span")[0].text, league)):
+                print (standardizeTeamName(game.find_all("span")[0].text, league))
+            if ("ERROR" in standardizeTeamName(game.find_all("span")[1].text, league)):
+                print (standardizeTeamName(game.find_all("span")[1].text, league))
 
-        A.addCellToRow(standardizeTeamName(game.find_all(class_="ellipsis event-row-participant style_participant__32s23")[0].text, league))
-        A.addCellToRow(standardizeTeamName(game.find_all(class_="ellipsis event-row-participant style_participant__32s23")[1].text, league))
-        ml = game.find(class_="style_buttons__16HgT style_moneyline__3_A20")
-        A.addCellToRow(ml.find_all(class_="style_price__3LrWW")[0].text)
-        A.addCellToRow(ml.find_all(class_="style_price__3LrWW")[1].text)
-        spread = game.find(class_="style_buttons__16HgT")
-        A.addCellToRow(spread.find("span").text)
-        A.addCellToRow(spread.find_all("span")[1].text)
-        A.addCellToRow(spread.find_all("span")[3].text)
-        A.appendRow()
+            A.addCellToRow(standardizeTeamName(game.find_all("span")[0].text, league))
+            A.addCellToRow(standardizeTeamName(game.find_all("span")[1].text, league))
+            A.addCellToRow(game.find_all("span")[7].text)
+            A.addCellToRow(game.find_all("span")[8].text)
+            A.addCellToRow(game.find_all("span")[3].text)
+            A.addCellToRow(game.find_all("span")[4].text)
+            A.addCellToRow(game.find_all("span")[6].text)
+            A.appendRow()
+        except:
+            continue
     browser.close()
     return (A.getDataFrame())
 
@@ -77,6 +87,14 @@ def updateSeasonStats(league, last_date):
         urlRoot = "https://basketball.realgm.com/international/league/6/Italian-Lega-Basket-Serie-A/scores/"
     elif (league == "France"):
         urlRoot = "https://basketball.realgm.com/international/league/12/French-Jeep-Elite/scores/"
+    elif (league == "France2"):
+        urlRoot = "https://basketball.realgm.com/international/league/50/French-LNB-Pro-B/scores/"
+    elif (league == "Germany2"):
+        urlRoot = "https://basketball.realgm.com/international/league/94/German-Pro-A/scores/"
+    elif (league == "Italy2"):
+        urlRoot = "https://basketball.realgm.com/international/league/54/Italian-Serie-A2-Basket/scores/"
+    elif (league == "VTB"):
+        urlRoot = "https://basketball.realgm.com/international/league/35/VTB-United-League/scores/"
     while (curDate < datetime.date.today()):
         browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
         soup = BeautifulSoup(browser.page_source, 'html.parser')
@@ -297,5 +315,9 @@ def bet(league, pinnacleLines):
     curBets.to_csv("./csv_data/bets.csv", index = False)
 
 
-#updateSeasonStats("France", datetime.date(2021, 9, 30))
-bet("France", scrapePinnacle("France"))
+league = "VTB"
+#stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+#last = stats.at[len(stats.index) - 1, "Date"]
+#updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+#updateSeasonStats(league, datetime.date(2021, 9, 22))
+bet(league, scrapePinnacle(league))

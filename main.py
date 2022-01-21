@@ -5,13 +5,12 @@ import data_manipulation as dm
 import prediction_evaluation as pe
 
 
-#
-#leagues = ["Spain","France","Italy","Germany"]
-#leagues = ["Spain","France","Italy","Germany","VTB"]
-leagues = ["France2"]
+
+leagues = ["Italy2"]
+#leagues = ["Spain","France","Italy","Germany","VTB","Spain2","Italy2","France2","Germany2","Turkey"]
 for league in leagues:
-    #print (league + "---------------------------------------------------------------------------")
-    dm.checkTeamNames(league)
+    print (league + "---------------------------------------------------------------------------")
+    #dm.checkTeamNames(league)
     #dm.combine_spreads_and_stats(league)
     #dm.preMatchAverages(league)
     #dm.train_test_split(league)
@@ -23,7 +22,7 @@ for league in leagues:
     #pe.kellySpreadBets(20000, 1, "Open", league)
     #pe.kellySpreadBets(20000, 1, "Close", league)
     #pe.betWithLines(20000, league)
-    #pe.analyzeMyLines(league)
+    pe.analyzeMyLines(league)
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 
 

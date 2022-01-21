@@ -522,7 +522,7 @@ def aggregateModelPredictions(league):
     predictions = []
     train_pred = []
     train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
-    aggLeagues = ["Italy","Germany","France"]
+    aggLeagues = ["France","Italy","Germany"]
     for l in aggLeagues:
         train = train.append(pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True), ignore_index = True)
     test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)

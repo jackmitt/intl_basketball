@@ -8,9 +8,9 @@ def amToDec(odds):
     else:
         return (100/abs(odds) + 1)
 
-def kellyStake(p, decOdds, kellyDiv):
-    if ((p - (1 - p)/(decOdds - 1)) / kellyDiv > 0.05):
-        return (0.05)
+def kellyStake(p, decOdds, kellyDiv, cap = 0.05):
+    if ((p - (1 - p)/(decOdds - 1)) / kellyDiv > cap):
+        return (cap)
     return ((p - (1 - p)/(decOdds - 1)) / kellyDiv)
 
 def simulateKellyBets(bankroll, kellyDiv, lineType, league):
