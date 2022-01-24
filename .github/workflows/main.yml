@@ -38,6 +38,7 @@ jobs:
           pip install sklearn
           pip install selenium
           pip install bs4
+          pip install webdriver_manager
           
       - name: run script
         run: python dailyBettingScript.py
