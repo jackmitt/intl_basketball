@@ -15,6 +15,8 @@ import math
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
@@ -30,8 +32,8 @@ def kellyStake(p, decOdds, kellyDiv):
 
 def scrapePinnacle(league):
     A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
-    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-    browser = webdriver.Chrome(executable_path=driver_path)
+    s = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    browser = webdriver.Chrome(service=s)
     browser.maximize_window()
     if (league == "Germany"):
         browser.get("https://www.pinnacle.com/en/basketball/germany-bundesliga/matchups/#period:0")
