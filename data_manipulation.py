@@ -180,7 +180,7 @@ def combine_spreads_and_stats(league):
 
 def preMatchAverages(league):
     stats = pd.read_csv("./csv_data/" + league + "/combined.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","Actual Spread"])
+    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","Actual Spread","Actual Total"])
     for index, row in stats.iterrows():
         if (index == 0 or abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(stats.at[index-1,"Date"].split("-")[0]), int(stats.at[index-1,"Date"].split("-")[1]), int(stats.at[index-1,"Date"].split("-")[2]))).days > 30):
             seasonDict = {}
@@ -314,6 +314,7 @@ def preMatchAverages(league):
             A.addCellToRow(row["Home Score"])
             A.addCellToRow(row["Away Score"])
             A.addCellToRow(row["Away Score"] - row["Home Score"])
+            A.addCellToRow(row["Away Score"] + row["Home Score"])
             A.appendRow()
         seasonDict[row["Home"]]["ORtg"].append(row["h_ORtg"])
         seasonDict[row["Away"]]["ORtg"].append(row["a_ORtg"])
@@ -598,8 +599,60 @@ def aggregateModelPredictions(league):
     test["Predict Home Open Cover"] = openCoverProb
     test["Predict Home Close Cover"] = closeCoverProb
 
+    y_train = train["Actual Total"]
+    y_test = test["Actual Total"]
+    test_OpenTotals = test["Open Total"]
+    test_CloseTotals = test["Close Total"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Predicted Total"] = predictions
+    for p in model.predict(X_train):
+        train_pred.append(p)
+    ones = []
+    for i in range(len(X_train.index)):
+        ones.append(1)
+    X_train["Intercept"] = ones
+    ones = []
+    for i in range(len(X_test.index)):
+        ones.append(1)
+    X_test["Intercept"] = ones
+    tAwayOpen = []
+    tAwayClose = []
+    openCoverProb = []
+    closeCoverProb = []
+    spredd = []
+    for i in range(len(predictions)):
+        sPred = math.sqrt(mean_squared_error(y_train, train_pred) + np.matmul(np.matmul(X_test.to_numpy()[i],mean_squared_error(y_train, train_pred)*inv(np.matmul(np.transpose(X_train.to_numpy()),X_train.to_numpy()))), np.transpose(X_test.to_numpy()[i])))
+        if (predictions[i] < test_OpenTotals[i]):
+            tAwayOpen.append(abs(predictions[i] - test_OpenTotals[i])/sPred)
+            openCoverProb.append(t.cdf(x=abs(predictions[i] - test_OpenTotals[i])/sPred, df=len(y_train) - len(xCols)))
+        else:
+            tAwayOpen.append(0-abs(predictions[i] - test_OpenTotals[i])/sPred)
+            openCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_OpenTotals[i])/sPred, df=len(y_train) - len(xCols)))
+        if (predictions[i] < test_CloseTotals[i]):
+            tAwayClose.append(abs(predictions[i] - test_CloseTotals[i])/sPred)
+            closeCoverProb.append(t.cdf(x=abs(predictions[i] - test_CloseTotals[i])/sPred, df=len(y_train) - len(xCols)))
+        else:
+            tAwayClose.append(0-abs(predictions[i] - test_CloseTotals[i])/sPred)
+            closeCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_CloseTotals[i])/sPred, df=len(y_train) - len(xCols)))
+        spredd.append(sPred)
+    test["T Away Open"] = tAwayOpen
+    test["T Away Close"] = tAwayClose
+    test["S Pred"] = spredd
+    test["Predict Open Over"] = openCoverProb
+    test["Predict Close Over"] = closeCoverProb
+
     homeOpenCover = []
     homeCloseCover = []
+    openOver = []
+    closeOver = []
     for index, row in test.iterrows():
         if (row["Away Score"] - row["Home Score"] < row["Open Spread"]):
             homeOpenCover.append(1)
@@ -613,8 +666,22 @@ def aggregateModelPredictions(league):
             homeCloseCover.append(0)
         else:
             homeCloseCover.append(np.nan)
+        if (row["Away Score"] + row["Home Score"] > row["Open Total"]):
+            openOver.append(1)
+        elif (row["Away Score"] + row["Home Score"] < row["Open Total"]):
+            openOver.append(0)
+        else:
+            openOver.append(np.nan)
+        if (row["Away Score"] + row["Home Score"] > row["Close Total"]):
+            closeOver.append(1)
+        elif (row["Away Score"] + row["Home Score"] < row["Close Total"]):
+            closeOver.append(0)
+        else:
+            closeOver.append(np.nan)
     test["Home Open Cover"] = homeOpenCover
     test["Home Close Cover"] = homeCloseCover
+    test["Open Over"] = openOver
+    test["Close Over"] = closeOver
     #
     for x in [train, test]:
         homeBookRtg = []
