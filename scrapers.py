@@ -216,19 +216,21 @@ def realgm(urlRoot, year, month, day):
     browser.close()
 
 def nowgoal(urlRoot, startMonth, league):
-    A = Database(["Date","Home","Away","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","url"])
+    A = Database(["Date","Home","Away","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","url"])
     browser = webdriver.Chrome(executable_path='chromedriver.exe')
     browser.maximize_window()
     if (not exists("./" + league + "_nowgoal_gameUrls.csv")):
         if (league != "Euroleague" and league != "VTB"):
             rootier = "https://basketball.nowgoal5.com/Normal/"
             league_num = urlRoot.split("/")[5]
-            if (league == "Germany2"):
-                curDate = datetime.date(2015, startMonth, 1)
-                curSeason = "2015-2016"
-            else:
-                curDate = datetime.date(2014, startMonth, 1)
-                curSeason = "2014-2015"
+            curDate = datetime.date(2017, startMonth, 1)
+            curSeason = "2017-2018"
+            # if (league == "Germany2"):
+            #     curDate = datetime.date(2015, startMonth, 1)
+            #     curSeason = "2015-2016"
+            # else:
+            #     curDate = datetime.date(2014, startMonth, 1)
+            #     curSeason = "2014-2015"
             gameUrls = []
             while (curDate < datetime.date(2022, 1, 1)):
                 try:
@@ -254,8 +256,9 @@ def nowgoal(urlRoot, startMonth, league):
         elif (league == "VTB"):
             rootier = "https://basketball.nowgoal5.com/CupMatch/"
             league_num = urlRoot.split("/")[5]
-            curDate = datetime.date(2014, startMonth, 1)
-            seasons = ["2014-2015","2015-2016","2016-2017","2017-2018","2018-2019","2019-2020","2020-2021"]
+            curDate = datetime.date(2017, startMonth, 1)
+            #seasons = ["2014-2015","2015-2016","2016-2017","2017-2018","2018-2019","2019-2020","2020-2021"]
+            seasons = ["2017-2018","2018-2019","2019-2020","2020-2021"]
             gameUrls = []
             for curSeason in seasons:
                 browser.get(curDate.strftime(rootier + curSeason + "/" + league_num))
@@ -425,6 +428,12 @@ def nowgoal(urlRoot, startMonth, league):
                 A.addCellToRow(np.nan)
                 A.addCellToRow(np.nan)
                 A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
                 A.addCellToRow(soup.find_all(class_="team_bf")[0].text)
                 A.addCellToRow(soup.find_all(class_="team_bf")[1].text)
                 A.addCellToRow(game)
@@ -439,6 +448,15 @@ def nowgoal(urlRoot, startMonth, league):
             A.addCellToRow(float(bet365.find_all("td")[2].find("span").text) * -1)
             A.addCellToRow(float(bet365.find_all("td")[1].find_all("span")[1].text) + 1)
             A.addCellToRow(float(bet365.find_all("td")[3].find_all("span")[1].text) + 1)
+            try:
+                A.addCellToRow(float(bet365.find_all("td")[5].text.replace(bet365.find_all("td")[5].find("span").text, "")))
+            except:
+                A.addCellToRow(float(bet365.find_all("td")[5].find("span").text))
+            A.addCellToRow(float(bet365.find_all("td")[4].find_all("span")[0].text) + 1)
+            A.addCellToRow(float(bet365.find_all("td")[6].find_all("span")[0].text) + 1)
+            A.addCellToRow(float(bet365.find_all("td")[5].find("span").text))
+            A.addCellToRow(float(bet365.find_all("td")[4].find_all("span")[1].text) + 1)
+            A.addCellToRow(float(bet365.find_all("td")[6].find_all("span")[1].text) + 1)
             A.addCellToRow(soup.find_all(class_="team_bf")[0].text)
             A.addCellToRow(soup.find_all(class_="team_bf")[1].text)
             A.addCellToRow(game)
@@ -447,6 +465,12 @@ def nowgoal(urlRoot, startMonth, league):
             if (counter % 20 == 1):
                 A.dictToCsv("./csv_data/" + league + "_spreads.csv")
         except:
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)

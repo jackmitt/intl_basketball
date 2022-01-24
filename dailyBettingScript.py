@@ -13,6 +13,8 @@ from sklearn.linear_model import LogisticRegression
 from numpy.linalg import inv
 import math
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
 from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
@@ -28,7 +30,8 @@ def kellyStake(p, decOdds, kellyDiv):
 
 def scrapePinnacle(league):
     A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
-    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    browser = webdriver.Chrome(executable_path=driver_path)
     browser.maximize_window()
     if (league == "Germany"):
         browser.get("https://www.pinnacle.com/en/basketball/germany-bundesliga/matchups/#period:0")
@@ -95,7 +98,7 @@ def updateSeasonStats(league, last_date):
         urlRoot = "https://basketball.realgm.com/international/league/54/Italian-Serie-A2-Basket/scores/"
     elif (league == "VTB"):
         urlRoot = "https://basketball.realgm.com/international/league/35/VTB-United-League/scores/"
-    while (curDate < datetime.date.today()):
+    while (curDate < datetime.date.today()+datetime.timedelta(days=1)):
         browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
         soup = BeautifulSoup(browser.page_source, 'html.parser')
         all = soup.find(class_="large-column-left scoreboard")
@@ -315,7 +318,7 @@ def bet(league, pinnacleLines):
     curBets.to_csv("./csv_data/bets.csv", index = False)
 
 
-league = "VTB"
+league = "Germany"
 #stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
 #last = stats.at[len(stats.index) - 1, "Date"]
 #updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))

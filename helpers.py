@@ -528,7 +528,7 @@ def standardizeTeamName(name, league):
             return ("OKT")
         elif ("kazan" in name):
             return ("UNICS")
-        elif ("kalev cramo" in name or "kalev-cramo" in name):
+        elif ("kalev cramo" in name or "kalev-cramo" in name or "bc kalev" in name):
             return ("KCT")
         elif ("riga " in name):
             return ("RIG")
@@ -748,7 +748,7 @@ def standardizeTeamName(name, league):
             return ("ROA")
         elif ("poitiers" in name):
             return ("PB86")
-        elif ("-quentin" in name):
+        elif ("-quentin" in name or "saint quentin" in name):
             return ("SQB")
         elif ("angers" == name):
             return ("ANG")

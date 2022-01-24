@@ -92,7 +92,7 @@ def checkTeamNames(league):
 def combine_spreads_and_stats(league):
     stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
     odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score"])
+    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score"])
     for i, r in stats.iterrows():
         found = False
         print (i)
@@ -130,6 +130,12 @@ def combine_spreads_and_stats(league):
                 A.addCellToRow(row["Close Spread"])
                 A.addCellToRow(row["Home Close Spread Odds"])
                 A.addCellToRow(row["Away Close Spread Odds"])
+                A.addCellToRow(row["Open Total"])
+                A.addCellToRow(row["Home Open Total Odds"])
+                A.addCellToRow(row["Away Open Total Odds"])
+                A.addCellToRow(row["Close Total"])
+                A.addCellToRow(row["Home Close Total Odds"])
+                A.addCellToRow(row["Away Close Total Odds"])
                 A.addCellToRow(row["Home Score"])
                 A.addCellToRow(row["Away Score"])
                 A.appendRow()
@@ -163,12 +169,18 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
             A.appendRow()
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
 def preMatchAverages(league):
     stats = pd.read_csv("./csv_data/" + league + "/combined.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Home Score","Away Score","Actual Spread"])
+    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","Actual Spread"])
     for index, row in stats.iterrows():
         if (index == 0 or abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(stats.at[index-1,"Date"].split("-")[0]), int(stats.at[index-1,"Date"].split("-")[1]), int(stats.at[index-1,"Date"].split("-")[2]))).days > 30):
             seasonDict = {}
@@ -293,6 +305,12 @@ def preMatchAverages(league):
             A.addCellToRow(row["Close Spread"])
             A.addCellToRow(row["Home Close Spread Odds"])
             A.addCellToRow(row["Away Close Spread Odds"])
+            A.addCellToRow(row["Open Total"])
+            A.addCellToRow(row["Home Open Total Odds"])
+            A.addCellToRow(row["Away Open Total Odds"])
+            A.addCellToRow(row["Close Total"])
+            A.addCellToRow(row["Home Close Total Odds"])
+            A.addCellToRow(row["Away Close Total Odds"])
             A.addCellToRow(row["Home Score"])
             A.addCellToRow(row["Away Score"])
             A.addCellToRow(row["Away Score"] - row["Home Score"])
