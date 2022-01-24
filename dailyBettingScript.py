@@ -32,8 +32,10 @@ def kellyStake(p, decOdds, kellyDiv):
 
 def scrapePinnacle(league):
     A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
-    s = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
-    browser = webdriver.Chrome(service=s)
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
     browser.maximize_window()
     if (league == "Germany"):
         browser.get("https://www.pinnacle.com/en/basketball/germany-bundesliga/matchups/#period:0")
