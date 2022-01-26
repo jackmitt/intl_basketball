@@ -150,12 +150,16 @@ def oddsportal(yearStart, yearEnd):
     browser.close()
 
 def realgm(urlRoot, year, month, day):
-    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
+    A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
+    for a in ["h_","a_"]:
+        for b in ["pg_","sg_","sf_","pf_","c_"]:
+            for c in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+                for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
+                    A.addColumn(a + b + c + d)
     league = urlRoot.split("/scores")[0].split("/")[6]
-    print (league)
     browser = webdriver.Chrome(executable_path='chromedriver.exe')
     browser.maximize_window()
-    if (not exists("./" + league + "_realgm_gameUrls.csv")):
+    if (not exists("./realgm_gameUrls/" + league + "_realgm_gameUrls.csv")):
         curDate = datetime.date(year, month, day)
         gameUrls = []
         while (curDate < datetime.date(2022, 1, 1)):
@@ -173,46 +177,102 @@ def realgm(urlRoot, year, month, day):
         save["urls"] = gameUrls
         dfFinal = pd.DataFrame.from_dict(save)
         dfFinal = dfFinal.drop_duplicates()
-        dfFinal.to_csv('./' + league + '_realgm_gameUrls.csv', index = False)
+        dfFinal.to_csv('./realgm_gameUrls/' + league + '_realgm_gameUrls.csv', index = False)
     else:
-        gameUrls = pd.read_csv('./' + league + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
+        gameUrls = pd.read_csv('./realgm_gameUrls/' + league + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
 
-    print (gameUrls)
     counter = 0
     if (exists("./csv_data/" + league + "_gameStats.csv")):
         A.initDictFromCsv("./csv_data/" + league + "_gameStats.csv")
         scrapedGames = pd.read_csv('./csv_data/' + league + '_gameStats.csv', encoding = "ISO-8859-1")["url"].tolist()
         for game in scrapedGames:
             gameUrls.remove(game)
-    try:
-        for game in gameUrls:
-            browser.get("https://basketball.realgm.com" + game)
-            soup = BeautifulSoup(browser.page_source, 'html.parser')
-            A.addCellToRow(game.split("boxscore/")[1].split("/")[0])
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[0].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[0].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[2].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[2].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[1].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[1].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[2].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[2].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[3].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[3].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[4].text)
-            A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[4].text)
-            A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
-            A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
-            A.addCellToRow(game)
-            A.appendRow()
-            counter += 1
-            if (counter % 20 == 1):
-                A.dictToCsv("./csv_data/" + league + "_gameStats.csv")
-    except:
-        time.sleep(300)
-        browser.close()
-        realgm(urlRoot, year, month, day)
-    A.dictToCsv("./csv_data/" + league + "_gameStats.csv")
+    #try:
+    for game in gameUrls:
+        browser.get("https://basketball.realgm.com" + game)
+        soup = BeautifulSoup(browser.page_source, 'html.parser')
+        A.addCellToRow(game.split("boxscore/")[1].split("/")[0])
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[0].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[0].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[3].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[3].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[4].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[4].text)
+        A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
+        A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
+        A.addCellToRow(game)
+
+        for z in ["h", "a"]:
+            if (z == "h"):
+                hdc = soup.find(class_="large-column-left").find_all("table")[1].find("tbody")
+                hbs = soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tbody")
+            else:
+                hdc = soup.find(class_="large-column-left").find_all("table")[0].find("tbody")
+                hbs = soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tbody")
+            roles = ["s","r","r","r","r","l","l","l"]
+            for tr in hdc.find_all("tr"):
+                while (tr.find("strong").text == "Lim PT" and roles[0] == "r"):
+                    for i in range(14*5):
+                        A.addCellToRow(np.nan)
+                    del roles[0]
+                for td in tr.find_all("td"):
+                    if (td["data-th"] != "Role"):
+                        try:
+                            curDude = td.find("a").text
+                        except:
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            continue
+                        A.addCellToRow(curDude)
+                        for p in hbs.find_all("tr"):
+                            if (p.find("a").text == curDude):
+                                A.addCellToRow(int(p.find_all("td")[4].text.split(":")[0]) * 60 + int(p.find_all("td")[4].text.split(":")[1]))
+                                A.addCellToRow(p.find_all("td")[5].text)
+                                A.addCellToRow(p.find_all("td")[6].text)
+                                A.addCellToRow(p.find_all("td")[7].text)
+                                A.addCellToRow(p.find_all("td")[8].text)
+                                A.addCellToRow(p.find_all("td")[9].text)
+                                A.addCellToRow(p.find_all("td")[10].text)
+                                A.addCellToRow(p.find_all("td")[12].text)
+                                A.addCellToRow(p.find_all("td")[13].text)
+                                A.addCellToRow(p.find_all("td")[14].text)
+                                A.addCellToRow(p.find_all("td")[15].text)
+                                A.addCellToRow(p.find_all("td")[16].text)
+                                A.addCellToRow(p.find_all("td")[17].text)
+                del roles[0]
+            for i in range(len(roles)*5*14):
+                A.addCellToRow(np.nan)
+
+
+        A.appendRow()
+        A.printDict()
+        counter += 1
+        if (counter % 20 == 1):
+            A.dictToCsv("./csv_data/" + league + "_gameStats.csv")
+    # except:
+    #     time.sleep(300)
+    #     browser.close()
+    #     realgm(urlRoot, year, month, day)
+    # A.dictToCsv("./csv_data/" + league + "_gameStats.csv")
     browser.close()
 
 def nowgoal(urlRoot, startMonth, league):
@@ -448,6 +508,20 @@ def nowgoal(urlRoot, startMonth, league):
             A.addCellToRow(float(bet365.find_all("td")[2].find("span").text) * -1)
             A.addCellToRow(float(bet365.find_all("td")[1].find_all("span")[1].text) + 1)
             A.addCellToRow(float(bet365.find_all("td")[3].find_all("span")[1].text) + 1)
+            try:
+                test = float(bet365.find_all("td")[4].find_all("span")[0].text)
+            except:
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(np.nan)
+                A.addCellToRow(soup.find_all(class_="team_bf")[0].text)
+                A.addCellToRow(soup.find_all(class_="team_bf")[1].text)
+                A.addCellToRow(game)
+                A.appendRow()
+                continue
             try:
                 A.addCellToRow(float(bet365.find_all("td")[5].text.replace(bet365.find_all("td")[5].find("span").text, "")))
             except:

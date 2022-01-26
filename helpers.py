@@ -732,7 +732,7 @@ def standardizeTeamName(name, league):
             return ("LMBC")
         elif ("antibes" in name):
             return ("ANT")
-        elif ("nantes" == name or "nantes atlantique" in name):
+        elif ("nantes" == name or "nantes atlantique" in name or "hermine nantes" in name):
             return ("NAN")
         elif ("voltaire" in name):
             return ("DEN")

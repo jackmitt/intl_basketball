@@ -322,9 +322,9 @@ def bet(league, pinnacleLines):
     curBets.to_csv("./csv_data/bets.csv", index = False)
 
 
-league = "Germany"
-#stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
-#last = stats.at[len(stats.index) - 1, "Date"]
-#updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+league = "France2"
+stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+last = stats.at[len(stats.index) - 1, "Date"]
+updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
 #updateSeasonStats(league, datetime.date(2021, 9, 22))
 bet(league, scrapePinnacle(league))
