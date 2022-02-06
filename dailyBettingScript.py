@@ -297,7 +297,7 @@ def bet(league, pinnacleLines):
     test["S Pred"] = spredd
     test["Predict Home Cover"] = openCoverProb
 
-    bankroll = 20000
+    bankroll = 22800
     bet = []
     amount = []
     kellyDiv = 1
@@ -322,7 +322,7 @@ def bet(league, pinnacleLines):
     curBets.to_csv("./csv_data/bets.csv", index = False)
 
 
-league = "Germany"
+league = "France2"
 stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
 last = stats.at[len(stats.index) - 1, "Date"]
 updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))

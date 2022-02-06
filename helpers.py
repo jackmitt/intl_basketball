@@ -90,7 +90,7 @@ def standardizeTeamName(name, league):
             return ("BETIS")
         elif ("andorra" in name):
             return ("AND")
-        elif ("unicaja" in name):
+        elif ("unicaja" in name or "cb malaga" in name):
             return ("UNI")
         elif ("real madrid" in name):
             return ("RMB")
@@ -120,7 +120,7 @@ def standardizeTeamName(name, league):
             return ("ERROR: " + name)
 
     if (league == "France"):
-        if ("pau-orthez" in name):
+        if ("pau-orthez" in name or "pau-lacq-orthez" in name):
             return ("PAU")
         elif ("orleanaise" in name or name == "orleans loiret basket"):
             return ("ORL")
@@ -794,7 +794,7 @@ def standardizeTeamName(name, league):
             return ("SVBD")
         elif ("chalon-saone" in name or "chalon-sur-saone" in name or "elan chalon" in name):
             return ("CHA")
-        elif ("tours" == name or "union tours" in name):
+        elif ("tours" == name or "union tours" in name or "tours basket" in name):
             return ("UTM")
         else:
             return ("ERROR: " + name)
