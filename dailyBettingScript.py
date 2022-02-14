@@ -72,8 +72,8 @@ def scrapePinnacle(league):
 
         A.addCellToRow(standardizeTeamName(game.find_all("span")[0].text, league))
         A.addCellToRow(standardizeTeamName(game.find_all("span")[1].text, league))
-        A.addCellToRow(np.nan)
-        A.addCellToRow(np.nan)
+        A.addCellToRow(-1)
+        A.addCellToRow(-1)
         A.addCellToRow(game.find_all("span")[3].text)
         A.addCellToRow(game.find_all("span")[4].text)
         A.addCellToRow(game.find_all("span")[6].text)
@@ -335,6 +335,6 @@ def bet(league, pinnacleLines):
 league = "Italy2"
 stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
 last = stats.at[len(stats.index) - 1, "Date"]
-updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+#updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
 #updateSeasonStats(league, datetime.date(2021, 9, 22))
 bet(league, scrapePinnacle(league))
