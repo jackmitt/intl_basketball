@@ -7,6 +7,11 @@ from os.path import exists
 from helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from helpers import standardizeTeamName
 
 def americanToDecimal(odds):
     if (odds < 0):
@@ -580,3 +585,54 @@ def nowgoal(urlRoot, startMonth, league):
         # nowgoal(urlRoot, startMonth, league)
     A.dictToCsv("./csv_data/" + league + "_spreads.csv")
     browser.close()
+
+def scrapePinnacle(league):
+    A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
+    browser.maximize_window()
+    if (league == "Germany"):
+        browser.get("https://www.pinnacle.com/en/basketball/germany-bundesliga/matchups/#period:0")
+    if (league == "Spain"):
+        browser.get("https://www.pinnacle.com/en/basketball/spain-acb/matchups#period:0")
+    if (league == "Italy"):
+        browser.get("https://www.pinnacle.com/en/basketball/italy-lega-a/matchups#period:0")
+    if (league == "France"):
+        browser.get("https://www.pinnacle.com/en/basketball/france-championnat-pro-a/matchups#period:0")
+    if (league == "France2"):
+        browser.get("https://www.pinnacle.com/en/basketball/france-championnat-pro-b/matchups#period:0")
+    if (league == "Germany2"):
+        browser.get("https://www.pinnacle.com/en/basketball/germany-pro-a/matchups#period:0")
+    if (league == "Italy2"):
+        browser.get("https://www.pinnacle.com/en/basketball/italy-lega-nazionale-pallacanestro-gold/matchups#period:0")
+    if (league == "VTB"):
+        browser.get("https://www.pinnacle.com/en/basketball/europe-vtb-united-league/matchups#period:0")
+    #if (league == "Spain2")
+        #
+    time.sleep(5)
+    soup = BeautifulSoup(browser.page_source, 'html.parser')
+    main = soup.find(class_="contentBlock square")
+    for game in main.contents:
+        try:
+            fail = game.find_all("span")[3].text
+        except:
+            continue
+        A.addCellToRow(datetime.date.today())
+        if ("ERROR" in standardizeTeamName(game.find_all("span")[0].text, league)):
+            print (standardizeTeamName(game.find_all("span")[0].text, league))
+        if ("ERROR" in standardizeTeamName(game.find_all("span")[1].text, league)):
+            print (standardizeTeamName(game.find_all("span")[1].text, league))
+
+        A.addCellToRow(standardizeTeamName(game.find_all("span")[0].text, league))
+        A.addCellToRow(standardizeTeamName(game.find_all("span")[1].text, league))
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(game.find_all("span")[3].text)
+        A.addCellToRow(game.find_all("span")[4].text)
+        A.addCellToRow(game.find_all("span")[6].text)
+        A.appendRow()
+    browser.close()
+    return (A.getDataFrame())

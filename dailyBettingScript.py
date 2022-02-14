@@ -35,6 +35,7 @@ def scrapePinnacle(league):
     driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
     browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
     browser.maximize_window()
     if (league == "Germany"):
@@ -60,29 +61,32 @@ def scrapePinnacle(league):
     main = soup.find(class_="contentBlock square")
     for game in main.contents:
         try:
-            fail = game.find_all("span")[8].text
-            A.addCellToRow(datetime.date.today())
-            if ("ERROR" in standardizeTeamName(game.find_all("span")[0].text, league)):
-                print (standardizeTeamName(game.find_all("span")[0].text, league))
-            if ("ERROR" in standardizeTeamName(game.find_all("span")[1].text, league)):
-                print (standardizeTeamName(game.find_all("span")[1].text, league))
-
-            A.addCellToRow(standardizeTeamName(game.find_all("span")[0].text, league))
-            A.addCellToRow(standardizeTeamName(game.find_all("span")[1].text, league))
-            A.addCellToRow(game.find_all("span")[7].text)
-            A.addCellToRow(game.find_all("span")[8].text)
-            A.addCellToRow(game.find_all("span")[3].text)
-            A.addCellToRow(game.find_all("span")[4].text)
-            A.addCellToRow(game.find_all("span")[6].text)
-            A.appendRow()
+            fail = game.find_all("span")[3].text
         except:
             continue
+        A.addCellToRow(datetime.date.today())
+        if ("ERROR" in standardizeTeamName(game.find_all("span")[0].text, league)):
+            print (standardizeTeamName(game.find_all("span")[0].text, league))
+        if ("ERROR" in standardizeTeamName(game.find_all("span")[1].text, league)):
+            print (standardizeTeamName(game.find_all("span")[1].text, league))
+
+        A.addCellToRow(standardizeTeamName(game.find_all("span")[0].text, league))
+        A.addCellToRow(standardizeTeamName(game.find_all("span")[1].text, league))
+        A.addCellToRow(np.nan)
+        A.addCellToRow(np.nan)
+        A.addCellToRow(game.find_all("span")[3].text)
+        A.addCellToRow(game.find_all("span")[4].text)
+        A.addCellToRow(game.find_all("span")[6].text)
+        A.appendRow()
     browser.close()
     return (A.getDataFrame())
 
 def updateSeasonStats(league, last_date):
     A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
-    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
     browser.maximize_window()
     curDate = last_date +datetime.timedelta(days=1)
     gameUrls = []
@@ -297,10 +301,16 @@ def bet(league, pinnacleLines):
     test["S Pred"] = spredd
     test["Predict Home Cover"] = openCoverProb
 
-    bankroll = 22800
+    bankroll = 18000
     bet = []
     amount = []
     kellyDiv = 1
+    lowConfLeagues = ["Spain","France","Italy","Germany","VTB"]
+    highConfLeagues = ["Italy2","France2","Germany2"]
+    if (league in lowConfLeagues):
+        p = 0.55
+    else:
+        p = 0.6
     for index, row in test.iterrows():
         if (abs(row["Predicted Spread"] - float(row["Spread"])) < 5):
             bet.append(np.nan)
@@ -308,10 +318,10 @@ def bet(league, pinnacleLines):
             continue
         elif (row["Predict Home Cover"] > 1 / float(row["Home Spread Odds"])):
             bet.append(row["Spread"])
-            amount.append(bankroll * kellyStake(row["Predict Home Cover"], float(row["Home Spread Odds"]), kellyDiv))
+            amount.append(bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv))
         elif (1 - row["Predict Home Cover"] > 1 / float(row["Away Spread Odds"])):
             bet.append(0-float(float(row["Spread"])))
-            amount.append(bankroll * kellyStake(1-row["Predict Home Cover"], float(row["Away Spread Odds"]), kellyDiv))
+            amount.append(bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv))
         else:
             bet.append(np.nan)
             amount.append(np.nan)
@@ -322,7 +332,7 @@ def bet(league, pinnacleLines):
     curBets.to_csv("./csv_data/bets.csv", index = False)
 
 
-league = "France2"
+league = "Italy2"
 stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
 last = stats.at[len(stats.index) - 1, "Date"]
 updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))

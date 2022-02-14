@@ -1,15 +1,16 @@
 from scrapers import oddsportal
 from scrapers import realgm
 from scrapers import nowgoal
+from scrapers import scrapePinnacle
 import data_manipulation as dm
 import prediction_evaluation as pe
 
 
 
 #leagues = ["Italy2"]
-leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2"]
-for league in leagues:
-    print (league + "---------------------------------------------------------------------------")
+#leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2"]
+#for league in leagues:
+    #print (league + "---------------------------------------------------------------------------")
     #dm.checkTeamNames(league)
     #dm.combine_spreads_and_stats(league)
     #dm.preMatchAverages(league)
@@ -19,8 +20,8 @@ for league in leagues:
     #dm.aggregateModelPredictions(league)
     #pe.simulateKellyBets(20000, 1, "Open", league)
     #pe.simulateKellyBets(20000, 1, "Close", league)
-    pe.kellySpreadBets(20000, 1, "Open", league, uf = 0)
-    pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
+    #pe.kellySpreadBets(20000, 1, "Open", league, uf = 0)
+    #pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
     #pe.betWithLines(20000, league)
     #pe.analyzeMyLines(league)
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
@@ -59,3 +60,5 @@ for league in leagues:
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/226", 9, "Spain2")
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/18", 9, "ABA")
 #nowgoal("https://basketball.nowgoal5.com/CupMatch/2017-2018/7", 9, "Euroleague")
+
+print(scrapePinnacle("Italy2"))
