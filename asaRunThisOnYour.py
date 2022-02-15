@@ -24,6 +24,8 @@ import time
 from os.path import exists
 from helpers import Database
 from dateutil.relativedelta import relativedelta
+import smtplib, ssl
+
 
 def kellyStake(p, decOdds, kellyDiv):
     if ((p - (1 - p)/(decOdds - 1)) / kellyDiv > 0.05):
@@ -59,6 +61,11 @@ def scrapePinnacle(league):
     time.sleep(5)
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     main = soup.find(class_="contentBlock square")
+    try:
+        fail = main.contents
+    except:
+        browser.close()
+        return (A.getDataFrame())
     for game in main.contents:
         try:
             fail = game.find_all("span")[3].text
@@ -328,14 +335,51 @@ def bet(league, pinnacleLines):
             amount.append(np.nan)
     test["Bet"] = bet
     test["Amount"] = amount
-    curBets = pd.read_csv("./csv_data/bets.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    curBets = pd.read_csv("./csv_data/botbets.csv", encoding = "ISO-8859-1")
+    droprows = []
+    for index, row in test.iterrows():
+        for i, r in curBets.iterrows():
+            if (row["Home"] == r["Home"] and row["Away"] == r["Away"] and abs(row["H_GP"] - r["H_GP"]) <= 1 and abs(row["A_GP"] - r["A_GP"]) <= 1):
+                droprows.append(index)
+    test = test.drop(droprows)
     curBets = curBets.append(test)
-    curBets.to_csv("./csv_data/bets.csv", index = False)
+    curBets.to_csv("./csv_data/botbets.csv", index = False)
+
+    port = 587  # For starttls
+    smtp_server = "smtp.gmail.com"
+    sender_email = "bbot0444@gmail.com"
+    receiver_email = "jjmittenthal@crimson.ua.edu"
+    password = "f3&FDvS9W7d+V!*g"
+    message = """\
+    Subject: """
+    message = message + league + "\n\n"
+
+    realBet = False
+    for index, row in test.iterrows():
+        if (row["Bet"] == row["Bet"]):
+            realBet = True
+            if (row["Bet"] == row["Spread"]):
+                message = message + row["Home"] + " " + str(row["Bet"]) + " Vs. " + row["Away"] + " (" + str(row["Predicted Spread"]) + ") Odds: " + str(row["Home Spread Odds"]) + "\n"
+            else:
+                message = message + row["Home"] + " Vs. " + row["Away"] + " " + str(row["Bet"]) + " (" + str(row["Predicted Spread"]) + ") Odds: " + str(row["Away Spread Odds"]) + "\n"
+
+    if (realBet):
+        context = ssl.create_default_context()
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.ehlo()  # Can be omitted
+            server.starttls(context=context)
+            server.ehlo()  # Can be omitted
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message)
 
 
-league = "Italy2"
-stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
-last = stats.at[len(stats.index) - 1, "Date"]
-updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
-#updateSeasonStats(league, datetime.date(2021, 9, 22))
-bet(league, scrapePinnacle(league))
+leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2"]
+for league in leagues:
+    stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    last = stats.at[len(stats.index) - 1, "Date"]
+    updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+    #updateSeasonStats(league, datetime.date(2021, 9, 22))
+    lines = scrapePinnacle(league)
+    if (lines.empty):
+        continue
+    bet(league, lines)

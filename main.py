@@ -2,9 +2,12 @@ from scrapers import oddsportal
 from scrapers import realgm
 from scrapers import nowgoal
 from scrapers import scrapePinnacle
+from scrapers import updateSeasonStats
 import data_manipulation as dm
 import prediction_evaluation as pe
-
+import pandas as pd
+import datetime
+import smtplib, ssl
 
 
 #leagues = ["Italy2"]
@@ -60,5 +63,3 @@ import prediction_evaluation as pe
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/226", 9, "Spain2")
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/18", 9, "ABA")
 #nowgoal("https://basketball.nowgoal5.com/CupMatch/2017-2018/7", 9, "Euroleague")
-
-print(scrapePinnacle("Italy2"))

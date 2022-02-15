@@ -636,3 +636,66 @@ def scrapePinnacle(league):
         A.appendRow()
     browser.close()
     return (A.getDataFrame())
+
+def updateSeasonStats(league, last_date):
+    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
+    browser.maximize_window()
+    curDate = last_date +datetime.timedelta(days=1)
+    gameUrls = []
+    if (league == "Germany"):
+        urlRoot = "https://basketball.realgm.com/international/league/15/German-BBL/scores/"
+    elif (league == "Spain"):
+        urlRoot = "https://basketball.realgm.com/international/league/4/Spanish-ACB/scores/"
+    elif (league == "Italy"):
+        urlRoot = "https://basketball.realgm.com/international/league/6/Italian-Lega-Basket-Serie-A/scores/"
+    elif (league == "France"):
+        urlRoot = "https://basketball.realgm.com/international/league/12/French-Jeep-Elite/scores/"
+    elif (league == "France2"):
+        urlRoot = "https://basketball.realgm.com/international/league/50/French-LNB-Pro-B/scores/"
+    elif (league == "Germany2"):
+        urlRoot = "https://basketball.realgm.com/international/league/94/German-Pro-A/scores/"
+    elif (league == "Italy2"):
+        urlRoot = "https://basketball.realgm.com/international/league/54/Italian-Serie-A2-Basket/scores/"
+    elif (league == "VTB"):
+        urlRoot = "https://basketball.realgm.com/international/league/35/VTB-United-League/scores/"
+    while (curDate < datetime.date.today()+datetime.timedelta(days=1)):
+        browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
+        soup = BeautifulSoup(browser.page_source, 'html.parser')
+        all = soup.find(class_="large-column-left scoreboard")
+        for t in all.find_all("table"):
+            for h in t.find_all('a'):
+                if (h.has_attr("href") and "boxscore" in h['href']):
+                    if (h['href'] not in gameUrls):
+                        gameUrls.append(h['href'])
+        curDate = curDate + datetime.timedelta(days=1)
+
+    for game in gameUrls:
+        browser.get("https://basketball.realgm.com" + game)
+        soup = BeautifulSoup(browser.page_source, 'html.parser')
+        A.addCellToRow(game.split("boxscore/")[1].split("/")[0])
+        if ("ERROR" in standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[1].text, league)):
+            print (standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[1].text, league))
+        A.addCellToRow(standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[1].text, league))
+        if ("ERROR" in standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[0].text, league)):
+            print (standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[0].text, league))
+        A.addCellToRow(standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[0].text, league))
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[1].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[2].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[3].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[3].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[4].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[0].find_all("td")[4].text)
+        A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
+        A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
+        A.addCellToRow(game)
+        A.appendRow()
+    print (A.getDataFrame())
