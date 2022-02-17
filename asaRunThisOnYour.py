@@ -25,6 +25,7 @@ from os.path import exists
 from helpers import Database
 from dateutil.relativedelta import relativedelta
 import smtplib, ssl
+import gc
 
 
 def kellyStake(p, decOdds, kellyDiv):
@@ -317,6 +318,8 @@ def bet(league, pinnacleLines):
     highConfLeagues = ["Italy2","France2","Germany2"]
     if (league in lowConfLeagues):
         p = 0.55
+        if (league == "Spain"):
+            p = 0.54
     else:
         p = 0.6
     for index, row in test.iterrows():
@@ -359,9 +362,9 @@ def bet(league, pinnacleLines):
         if (row["Bet"] == row["Bet"]):
             realBet = True
             if (row["Bet"] == row["Spread"]):
-                message = message + row["Home"] + " " + str(row["Bet"]) + " Vs. " + row["Away"] + " (" + str(row["Predicted Spread"]) + ") Odds: " + str(row["Home Spread Odds"]) + "\n"
+                message = message + row["Home"] + " " + str(row["Bet"]) + " Vs. " + row["Away"] + " (" + str(row["Predicted Spread"]) + ")\nOdds: " + str(row["Home Spread Odds"]) + "\nAmount: " + str(row["Amount"]) + "\n"
             else:
-                message = message + row["Home"] + " Vs. " + row["Away"] + " " + str(row["Bet"]) + " (" + str(row["Predicted Spread"]) + ") Odds: " + str(row["Away Spread Odds"]) + "\n"
+                message = message + row["Home"] + " Vs. " + row["Away"] + " " + str(row["Bet"]) + " (" + str(row["Predicted Spread"]) + ")\nOdds: " + str(row["Away Spread Odds"]) + "\nAmount: " + str(row["Amount"]) + "\n"
 
     if (realBet):
         context = ssl.create_default_context()
@@ -374,12 +377,17 @@ def bet(league, pinnacleLines):
 
 
 leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2"]
-for league in leagues:
-    stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
-    last = stats.at[len(stats.index) - 1, "Date"]
-    updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
-    #updateSeasonStats(league, datetime.date(2021, 9, 22))
-    lines = scrapePinnacle(league)
-    if (lines.empty):
+while(1):
+    gc.collect()
+    try:
+        for league in leagues:
+            stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+            last = stats.at[len(stats.index) - 1, "Date"]
+            updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+            #updateSeasonStats(league, datetime.date(2021, 9, 22))
+            lines = scrapePinnacle(league)
+            if (lines.empty):
+                continue
+            bet(league, lines)
+    except:
         continue
-    bet(league, lines)

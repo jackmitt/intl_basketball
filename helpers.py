@@ -354,7 +354,7 @@ def standardizeTeamName(name, league):
             return ("BRE")
         elif ("treviso" in name):
             return ("TREV")
-        elif ("biancoblu basket bologna" in name or name == "fortituto kontatto bologna" or name == "fortitudo bologna 103"):
+        elif ("biancoblu basket bologna" in name or name == "fortituto kontatto bologna" or name == "fortitudo bologna 103" or name == "fortitudo bologna"):
             return ("BOLO")
         elif ("trieste" in name):
             return ("TRIE")
@@ -738,7 +738,7 @@ def standardizeTeamName(name, league):
             return ("DEN")
         elif ("souffelweyersheim" in name):
             return ("SOU")
-        elif (" evreux" in name):
+        elif (" evreux" in name or name == "evreux"):
             return ("ALM")
         elif ("charleville-" in name):
             return ("ECM")
@@ -758,7 +758,7 @@ def standardizeTeamName(name, league):
             return ("ASM")
         elif ("fos ouest" in name):
             return ("FOS")
-        elif (" maurienne" in name):
+        elif (" maurienne" in name or name == "aix-maurienne"):
             return ("AMSB")
         elif ("vichy" == name or "ja vichy" in name):
             return ("JAV")

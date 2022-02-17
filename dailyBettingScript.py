@@ -256,10 +256,10 @@ def bet(league, pinnacleLines):
 
     predictions = []
     train_pred = []
-    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    train = pd.read_csv("./csv_data/Spain/backup/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
     aggLeagues = ["Italy","Germany","France"]
     for l in aggLeagues:
-        train = train.append(pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True), ignore_index = True)
+        train = train.append(pd.read_csv("./csv_data/" + l + "/backup/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True), ignore_index = True)
     xCols = []
     for col in train.columns:
         if (("H_" in col or "A_" in col) and "_GP" not in col):
@@ -333,7 +333,7 @@ def bet(league, pinnacleLines):
     curBets.to_csv("./csv_data/bets.csv", index = False)
 
 
-league = "Italy2"
+league = "Germany"
 stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
 last = stats.at[len(stats.index) - 1, "Date"]
 updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))

@@ -62,7 +62,7 @@ def simulateKellyBets(bankroll, kellyDiv, lineType, league):
     pred.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
     print(netSum, totalBets, netSum / totalBets)
 
-def analyzeMyLines(league):
+def analyzeMyLines(league, betType):
     pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
     cats = ["Small Edge","Mid Edge","Large Edge","Larger Edge","Home","Away","On Large Home Fav","Against Large Home Fav","On Small Home Fav","Against Small Home Fav","On Large Away Fav","Against Large Away Fav","On Small Away Fav","Against Small Away Fav"]
     tests = ["Open", "Close", "CLV"]
@@ -72,274 +72,274 @@ def analyzeMyLines(league):
             dict[i + " " + j] = []
     for index, row in pred.iterrows():
         #EDGES
-        if (abs(row["Predicted Spread"] - row["Open Spread"]) < 2):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["Small Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        if (abs(row["Predicted " + betType] - row["Open " + betType]) < 2):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["Small Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Small Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["Small Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Small Edge Open"].append(1)
                 else:
                     dict["Small Edge Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["Small Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["Small Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Small Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["Small Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Small Edge Open"].append(1)
                 else:
                     dict["Small Edge Open"].append(0)
-        elif (abs(row["Predicted Spread"] - row["Open Spread"]) < 5):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["Mid Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        elif (abs(row["Predicted " + betType] - row["Open " + betType]) < 5):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["Mid Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Mid Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["Mid Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Mid Edge Open"].append(1)
                 else:
                     dict["Mid Edge Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["Mid Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["Mid Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Mid Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["Mid Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Mid Edge Open"].append(1)
                 else:
                     dict["Mid Edge Open"].append(0)
-        elif (abs(row["Predicted Spread"] - row["Open Spread"]) < 7.5):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["Large Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        elif (abs(row["Predicted " + betType] - row["Open " + betType]) < 7.5):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["Large Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Large Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["Large Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Large Edge Open"].append(1)
                 else:
                     dict["Large Edge Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["Large Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["Large Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Large Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["Large Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Large Edge Open"].append(1)
                 else:
                     dict["Large Edge Open"].append(0)
-        elif (abs(row["Predicted Spread"] - row["Open Spread"]) < 12.5):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["Larger Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        elif (abs(row["Predicted " + betType] - row["Open " + betType]) < 12.5):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["Larger Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Larger Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["Larger Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Larger Edge Open"].append(1)
                 else:
                     dict["Larger Edge Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["Larger Edge CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["Larger Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Larger Edge CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["Larger Edge CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Larger Edge Open"].append(1)
                 else:
                     dict["Larger Edge Open"].append(0)
-        if (abs(row["Predicted Spread"] - row["Close Spread"]) < 2):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        if (abs(row["Predicted " + betType] - row["Close " + betType]) < 2):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Small Edge Close"].append(1)
                 else:
                     dict["Small Edge Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["Small Edge Close"].append(1)
                 else:
                     dict["Small Edge Close"].append(0)
-        elif (abs(row["Predicted Spread"] - row["Close Spread"]) < 5):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        elif (abs(row["Predicted " + betType] - row["Close " + betType]) < 5):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Mid Edge Close"].append(1)
                 else:
                     dict["Mid Edge Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["Mid Edge Close"].append(1)
                 else:
                     dict["Mid Edge Close"].append(0)
-        elif (abs(row["Predicted Spread"] - row["Close Spread"]) < 7.5):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        elif (abs(row["Predicted " + betType] - row["Close " + betType]) < 7.5):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Large Edge Close"].append(1)
                 else:
                     dict["Large Edge Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["Large Edge Close"].append(1)
                 else:
                     dict["Large Edge Close"].append(0)
-        elif (abs(row["Predicted Spread"] - row["Close Spread"]) < 12.5):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        elif (abs(row["Predicted " + betType] - row["Close " + betType]) < 12.5):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Larger Edge Close"].append(1)
                 else:
                     dict["Larger Edge Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["Larger Edge Close"].append(1)
                 else:
                     dict["Larger Edge Close"].append(0)
         #HOME, AWAY
-        if (row["Predicted Spread"] < row["Open Spread"]):
-            if (row["Close Spread"] < row["Open Spread"]):
-                dict["Home CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        if (row["Predicted " + betType] < row["Open " + betType]):
+            if (row["Close " + betType] < row["Open " + betType]):
+                dict["Home CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
             else:
-                dict["Home CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-            if (row["Actual Spread"] < row["Open Spread"]):
+                dict["Home CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+            if (row["Actual " + betType] < row["Open " + betType]):
                 dict["Home Open"].append(1)
             else:
                 dict["Home Open"].append(0)
         else:
-            if (row["Close Spread"] > row["Open Spread"]):
-                dict["Away CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+            if (row["Close " + betType] > row["Open " + betType]):
+                dict["Away CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
             else:
-                dict["Away CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-            if (row["Actual Spread"] > row["Open Spread"]):
+                dict["Away CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+            if (row["Actual " + betType] > row["Open " + betType]):
                 dict["Away Open"].append(1)
             else:
                 dict["Away Open"].append(0)
-        if (row["Predicted Spread"] < row["Close Spread"]):
-            if (row["Actual Spread"] < row["Close Spread"]):
+        if (row["Predicted " + betType] < row["Close " + betType]):
+            if (row["Actual " + betType] < row["Close " + betType]):
                 dict["Home Close"].append(1)
             else:
                 dict["Home Close"].append(0)
         else:
-            if (row["Actual Spread"] > row["Close Spread"]):
+            if (row["Actual " + betType] > row["Close " + betType]):
                 dict["Away Close"].append(1)
             else:
                 dict["Away Close"].append(0)
         #SIZE OF FAVORITE
-        if (row["Open Spread"] <= -10):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["On Large Home Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        if (row["Open " + betType] <= -10):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["On Large Home Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["On Large Home Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["On Large Home Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["On Large Home Fav Open"].append(1)
                 else:
                     dict["On Large Home Fav Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["Against Large Home Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["Against Large Home Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Against Large Home Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["Against Large Home Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Against Large Home Fav Open"].append(1)
                 else:
                     dict["Against Large Home Fav Open"].append(0)
-        elif (row["Open Spread"] < 0):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["On Small Home Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        elif (row["Open " + betType] < 0):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["On Small Home Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["On Small Home Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["On Small Home Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["On Small Home Fav Open"].append(1)
                 else:
                     dict["On Small Home Fav Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["Against Small Home Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["Against Small Home Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Against Small Home Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["Against Small Home Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Against Small Home Fav Open"].append(1)
                 else:
                     dict["Against Small Home Fav Open"].append(0)
-        elif (row["Open Spread"] < 10):
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["Against Small Away Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+        elif (row["Open " + betType] < 10):
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["Against Small Away Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Against Small Away Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["Against Small Away Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Against Small Away Fav Open"].append(1)
                 else:
                     dict["Against Small Away Fav Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["On Small Away Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["On Small Away Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["On Small Away Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["On Small Away Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["On Small Away Fav Open"].append(1)
                 else:
                     dict["On Small Away Fav Open"].append(0)
         else:
-            if (row["Predicted Spread"] < row["Open Spread"]):
-                if (row["Close Spread"] < row["Open Spread"]):
-                    dict["Against Large Away Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+            if (row["Predicted " + betType] < row["Open " + betType]):
+                if (row["Close " + betType] < row["Open " + betType]):
+                    dict["Against Large Away Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["Against Large Away Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] < row["Open Spread"]):
+                    dict["Against Large Away Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Against Large Away Fav Open"].append(1)
                 else:
                     dict["Against Large Away Fav Open"].append(0)
             else:
-                if (row["Close Spread"] > row["Open Spread"]):
-                    dict["On Large Away Fav CLV"].append(abs(row["Close Spread"] - row["Open Spread"]))
+                if (row["Close " + betType] > row["Open " + betType]):
+                    dict["On Large Away Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
-                    dict["On Large Away Fav CLV"].append(0 - abs(row["Close Spread"] - row["Open Spread"]))
-                if (row["Actual Spread"] > row["Open Spread"]):
+                    dict["On Large Away Fav CLV"].append(0 - abs(row["Close " + betType] - row["Open " + betType]))
+                if (row["Actual " + betType] > row["Open " + betType]):
                     dict["On Large Away Fav Open"].append(1)
                 else:
                     dict["On Large Away Fav Open"].append(0)
 
-        if (row["Close Spread"] <= -10):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        if (row["Close " + betType] <= -10):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["On Large Home Fav Close"].append(1)
                 else:
                     dict["On Large Home Fav Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["Against Large Home Fav Close"].append(1)
                 else:
                     dict["Against Large Home Fav Close"].append(0)
-        elif (row["Close Spread"] < 0):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        elif (row["Close " + betType] < 0):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["On Small Home Fav Close"].append(1)
                 else:
                     dict["On Small Home Fav Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["Against Small Home Fav Close"].append(1)
                 else:
                     dict["Against Small Home Fav Close"].append(0)
-        elif (row["Close Spread"] < 10):
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+        elif (row["Close " + betType] < 10):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Against Small Away Fav Close"].append(1)
                 else:
                     dict["Against Small Away Fav Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["On Small Away Fav Close"].append(1)
                 else:
                     dict["On Small Away Fav Close"].append(0)
         else:
-            if (row["Predicted Spread"] < row["Close Spread"]):
-                if (row["Actual Spread"] < row["Close Spread"]):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Against Large Away Fav Close"].append(1)
                 else:
                     dict["Against Large Away Fav Close"].append(0)
             else:
-                if (row["Actual Spread"] > row["Close Spread"]):
+                if (row["Actual " + betType] > row["Close " + betType]):
                     dict["On Large Away Fav Close"].append(1)
                 else:
                     dict["On Large Away Fav Close"].append(0)

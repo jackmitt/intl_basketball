@@ -11,11 +11,13 @@ import smtplib, ssl
 
 
 #leagues = ["Italy2"]
-#leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2"]
-#for league in leagues:
-    #print (league + "---------------------------------------------------------------------------")
+leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2","Euroleague","Adriatic","Australia","Spain2","Greece"]
+for league in leagues:
+    print (league + "---------------------------------------------------------------------------")
+    realgm(league, 1, 1, 1, leagueBased = True)
     #dm.checkTeamNames(league)
     #dm.combine_spreads_and_stats(league)
+    #dm.tempAddTotalsFromBackupCombined(league)
     #dm.preMatchAverages(league)
     #dm.train_test_split(league)
     #pe.betWithLines(20000, league = league)
@@ -26,7 +28,7 @@ import smtplib, ssl
     #pe.kellySpreadBets(20000, 1, "Open", league, uf = 0)
     #pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
     #pe.betWithLines(20000, league)
-    #pe.analyzeMyLines(league)
+    #pe.analyzeMyLines(league, "Total")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 
 
@@ -42,16 +44,19 @@ import smtplib, ssl
 
 
 
-
-
-
-#realgm("https://basketball.realgm.com/international/league/7/Turkish-BSL/scores/", 2014, 10, 11)
-#realgm("https://basketball.realgm.com/international/league/54/Italian-Serie-A2-Basket/scores/", 2014, 10, 5)
-#realgm("https://basketball.realgm.com/international/league/50/French-LNB-Pro-B/scores/", 2014, 10, 3)
-#realgm("https://basketball.realgm.com/international/league/55/Spanish-LEB-Gold/scores/", 2014, 10, 3)
-#realgm("https://basketball.realgm.com/international/league/94/German-Pro-A/scores/", 2014, 9, 27)
-#realgm("https://basketball.realgm.com/international/league/18/Adriatic-League-Liga-ABA/scores/", 2014, 10, 3)
-#realgm("https://basketball.realgm.com/international/league/35/VTB-United-League/scores/", 2014, 10, 3)
+# realgm("https://basketball.realgm.com/international/league/4/Spanish-ACB/scores/", 2014, 10, 11)
+# realgm("https://basketball.realgm.com/international/league/12/French-Jeep-Elite/scores/", 2014, 10, 11)
+# realgm("https://basketball.realgm.com/international/league/6/Italian-Lega-Basket-Serie-A/scores/", 2014, 10, 11)
+# realgm("https://basketball.realgm.com/international/league/15/German-BBL/scores/", 2014, 10, 11)
+# realgm("https://basketball.realgm.com/international/league/1/Euroleague/scores/", 2014, 10, 11)
+#
+# realgm("https://basketball.realgm.com/international/league/7/Turkish-BSL/scores/", 2014, 10, 11)
+# realgm("https://basketball.realgm.com/international/league/54/Italian-Serie-A2-Basket/scores/", 2014, 10, 5)
+# realgm("https://basketball.realgm.com/international/league/50/French-LNB-Pro-B/scores/", 2014, 10, 3)
+# realgm("https://basketball.realgm.com/international/league/55/Spanish-LEB-Gold/scores/", 2014, 10, 3)
+# realgm("https://basketball.realgm.com/international/league/94/German-Pro-A/scores/", 2014, 9, 27)
+# realgm("https://basketball.realgm.com/international/league/18/Adriatic-League-Liga-ABA/scores/", 2014, 10, 3)
+# realgm("https://basketball.realgm.com/international/league/35/VTB-United-League/scores/", 2014, 10, 3)
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/20", 9, "Spain")
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/16", 10, "Italy")
 #nowgoal("https://basketball.nowgoal5.com/Normal/2017-2018/19", 9, "France")

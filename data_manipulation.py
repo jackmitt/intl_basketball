@@ -88,7 +88,7 @@ def checkTeamNames(league):
         except:
             continue
 
-#for spreads
+#for spreads and totals
 def combine_spreads_and_stats(league):
     stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
     odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
@@ -96,6 +96,42 @@ def combine_spreads_and_stats(league):
     for i, r in stats.iterrows():
         found = False
         print (i)
+        if (int(r["Date"].split("-")[0]) < 2017):
+            A.addCellToRow(r["Date"])
+            A.addCellToRow(r["Home"])
+            A.addCellToRow(r["Away"])
+            A.addCellToRow(r["h_ORtg"])
+            A.addCellToRow(r["a_ORtg"])
+            A.addCellToRow(r["h_eFG%"])
+            A.addCellToRow(r["a_eFG%"])
+            A.addCellToRow(r["h_TO%"])
+            A.addCellToRow(r["a_TO%"])
+            A.addCellToRow(r["h_OR%"])
+            A.addCellToRow(r["a_OR%"])
+            A.addCellToRow(r["h_FTR"])
+            A.addCellToRow(r["a_FTR"])
+            A.addCellToRow(r["h_FIC"])
+            A.addCellToRow(r["a_FIC"])
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.appendRow()
+            continue
         for index, row in odds.iterrows():
             try:
                 if ("/" in row["Date"]):
@@ -175,6 +211,132 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
+            A.appendRow()
+    A.dictToCsv("./csv_data/" + league + "/combined.csv")
+
+#did this to merge totals that were scraped only for 2017 and later - last function assumes the betting data is available going back to 2014
+def tempAddTotalsFromBackupCombined(league):
+    stats = pd.read_csv("./csv_data/" + league + "/backup/combined.csv", encoding = "ISO-8859-1")
+    odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
+    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score"])
+    for i, r in stats.iterrows():
+        found = False
+        print (i)
+        if (int(r["Date"].split("-")[0]) < 2017):
+            A.addCellToRow(r["Date"])
+            A.addCellToRow(r["Home"])
+            A.addCellToRow(r["Away"])
+            A.addCellToRow(r["h_ORtg"])
+            A.addCellToRow(r["a_ORtg"])
+            A.addCellToRow(r["h_eFG%"])
+            A.addCellToRow(r["a_eFG%"])
+            A.addCellToRow(r["h_TO%"])
+            A.addCellToRow(r["a_TO%"])
+            A.addCellToRow(r["h_OR%"])
+            A.addCellToRow(r["a_OR%"])
+            A.addCellToRow(r["h_FTR"])
+            A.addCellToRow(r["a_FTR"])
+            A.addCellToRow(r["h_FIC"])
+            A.addCellToRow(r["a_FIC"])
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(r["Home Score"])
+            A.addCellToRow(r["Away Score"])
+            A.appendRow()
+            continue
+        for index, row in odds.iterrows():
+            try:
+                if ("/" in row["Date"]):
+                    oddsDate = datetime.date(int(row["Date"].split("/")[2]), int(row["Date"].split("/")[1]), int(row["Date"].split("/")[0]))
+                else:
+                    oddsDate = datetime.date(int(row["Date"].split("-")[2]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[0]))
+            except:
+                continue
+            if (r["Home"] in standardizeTeamName(row["Home"], league) and r["Away"] in standardizeTeamName(row["Away"], league) and abs(oddsDate - datetime.date(int(r["Date"].split("-")[0]), int(r["Date"].split("-")[1]), int(r["Date"].split("-")[2]))).days <= 1):
+                A.addCellToRow(r["Date"])
+                A.addCellToRow(standardizeTeamName(row["Home"], league))
+                A.addCellToRow(standardizeTeamName(row["Away"], league))
+                A.addCellToRow(r["h_ORtg"])
+                A.addCellToRow(r["a_ORtg"])
+                A.addCellToRow(r["h_eFG%"])
+                A.addCellToRow(r["a_eFG%"])
+                A.addCellToRow(r["h_TO%"])
+                A.addCellToRow(r["a_TO%"])
+                A.addCellToRow(r["h_OR%"])
+                A.addCellToRow(r["a_OR%"])
+                A.addCellToRow(r["h_FTR"])
+                A.addCellToRow(r["a_FTR"])
+                A.addCellToRow(r["h_FIC"])
+                A.addCellToRow(r["a_FIC"])
+                A.addCellToRow(row["Home Open ML"])
+                A.addCellToRow(row["Away Open ML"])
+                A.addCellToRow(row["Home Close ML"])
+                A.addCellToRow(row["Away Close ML"])
+                A.addCellToRow(row["Open Spread"])
+                A.addCellToRow(row["Home Open Spread Odds"])
+                A.addCellToRow(row["Away Open Spread Odds"])
+                A.addCellToRow(row["Close Spread"])
+                A.addCellToRow(row["Home Close Spread Odds"])
+                A.addCellToRow(row["Away Close Spread Odds"])
+                A.addCellToRow(row["Open Total"])
+                A.addCellToRow(row["Home Open Total Odds"])
+                A.addCellToRow(row["Away Open Total Odds"])
+                A.addCellToRow(row["Close Total"])
+                A.addCellToRow(row["Home Close Total Odds"])
+                A.addCellToRow(row["Away Close Total Odds"])
+                A.addCellToRow(row["Home Score"])
+                A.addCellToRow(row["Away Score"])
+                A.appendRow()
+                found = True
+                break
+        if (not found):
+            A.addCellToRow(r["Date"])
+            A.addCellToRow(r["Home"])
+            A.addCellToRow(r["Away"])
+            A.addCellToRow(r["h_ORtg"])
+            A.addCellToRow(r["a_ORtg"])
+            A.addCellToRow(r["h_eFG%"])
+            A.addCellToRow(r["a_eFG%"])
+            A.addCellToRow(r["h_TO%"])
+            A.addCellToRow(r["a_TO%"])
+            A.addCellToRow(r["h_OR%"])
+            A.addCellToRow(r["a_OR%"])
+            A.addCellToRow(r["h_FTR"])
+            A.addCellToRow(r["a_FTR"])
+            A.addCellToRow(r["h_FIC"])
+            A.addCellToRow(r["a_FIC"])
+            A.addCellToRow(r["Home Open ML"])
+            A.addCellToRow(r["Away Open ML"])
+            A.addCellToRow(r["Home Close ML"])
+            A.addCellToRow(r["Away Close ML"])
+            A.addCellToRow(r["Open Spread"])
+            A.addCellToRow(r["Home Open Spread Odds"])
+            A.addCellToRow(r["Away Open Spread Odds"])
+            A.addCellToRow(r["Close Spread"])
+            A.addCellToRow(r["Home Close Spread Odds"])
+            A.addCellToRow(r["Away Close Spread Odds"])
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(r["Home Score"])
+            A.addCellToRow(r["Away Score"])
             A.appendRow()
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
@@ -540,10 +702,13 @@ def predictions(league):
 def aggregateModelPredictions(league):
     predictions = []
     train_pred = []
-    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
     aggLeagues = ["France","Italy","Germany"]
     for l in aggLeagues:
-        train = train.append(pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True), ignore_index = True)
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
     test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
     xCols = []
     for col in train.columns:
@@ -599,6 +764,8 @@ def aggregateModelPredictions(league):
     test["Predict Home Open Cover"] = openCoverProb
     test["Predict Home Close Cover"] = closeCoverProb
 
+    predictions = []
+    train_pred = []
     y_train = train["Actual Total"]
     y_test = test["Actual Total"]
     test_OpenTotals = test["Open Total"]
@@ -700,20 +867,4 @@ def aggregateModelPredictions(league):
     train = train.dropna()
     test = test.dropna()
 
-
-    pred = []
-    y_train = train["Home Win"]
-    scaler = StandardScaler()
-    X_train = pd.DataFrame(train, columns = xCols)
-    X_train[xCols] = scaler.fit_transform(X_train[xCols])
-    X_test = pd.DataFrame(test, columns = xCols)
-    X_test[xCols] = scaler.transform(X_test[xCols])
-    model = LogisticRegression(max_iter = 100000, C = 3)
-    model.fit(X = X_train, y = y_train)
-    for p in model.predict_proba(X_test):
-        if (model.classes_[1] == 1):
-            pred.append(p[1])
-        else:
-            pred.append(p[0])
-    test["Predict Home Win"] = pred
     test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
