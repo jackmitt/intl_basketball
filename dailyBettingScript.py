@@ -338,4 +338,4 @@ stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", en
 last = stats.at[len(stats.index) - 1, "Date"]
 updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
 #updateSeasonStats(league, datetime.date(2021, 9, 22))
-bet(league, scrapePinnacle(league))
+#bet(league, scrapePinnacle(league))
