@@ -375,8 +375,8 @@ def bet(league, pinnacleLines):
 
 
 leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2"]
+# leagues = ["Italy2"]
 while(1):
-    gc.collect()
     for league in leagues:
         try:
             stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStats.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
@@ -384,10 +384,10 @@ while(1):
             updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
             #updateSeasonStats(league, datetime.date(2021, 9, 22))
             lines = scrapePinnacle(league)
-            if (lines.empty):
-                continue
-            bet(league, lines)
+            if (not lines.empty):
+                bet(league, lines)
         except:
             print("Failed on " + league);
-            continue
+        finally:
+            gc.collect()
     break

@@ -1,7 +1,8 @@
-log_file = "logfile.log"
+log_file="logfile.log"
 
 while [ 1 ]
 do
+	echo Starting Loop
 	echo "--------------------" >> $log_file
 	date "+%Y-%m%d %T" >> $log_file
 	echo "--------------------" >> $log_file
