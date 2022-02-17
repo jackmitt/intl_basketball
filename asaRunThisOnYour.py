@@ -13,8 +13,6 @@ from sklearn.linear_model import LogisticRegression
 from numpy.linalg import inv
 import math
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
@@ -35,7 +33,7 @@ def kellyStake(p, decOdds, kellyDiv):
 
 def scrapePinnacle(league):
     A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
-    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    driver_path = "/usr/lib/chromium-browser/chromedriver"
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
@@ -91,7 +89,7 @@ def scrapePinnacle(league):
 
 def updateSeasonStats(league, last_date):
     A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
-    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    driver_path = "/usr/lib/chromium-browser/chromedriver"
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
@@ -390,4 +388,5 @@ while(1):
                 continue
             bet(league, lines)
     except:
+        print("Failed on " + league);
         continue
