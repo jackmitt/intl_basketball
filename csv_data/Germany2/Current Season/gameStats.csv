@@ -173,8 +173,10 @@ Date,Home,Away,h_ORtg,a_ORtg,h_eFG%,a_eFG%,h_TO%,a_TO%,h_OR%,a_OR%,h_FTR,a_FTR,h
 2022-02-09,AST,TRI,114.4,95.7,0.574,0.455,0.112,0.174,0.125,0.244,0.206,0.239,62.4,55.4,/international/boxscore/2022-02-09/Gladiators-Trier-at-VFL-Astrostars-Bochum/385802
 2022-02-09,PS,URS,151.4,86.3,0.663,0.41,0.093,0.186,0.348,0.385,0.1,0.149,113.6,22.4,/international/boxscore/2022-02-09/Erdgas-Ehingen-at-PS-Karlsruhe/385808
 2022-02-09,ROST,BAY,122.2,126.1,0.493,0.569,0.079,0.092,0.324,0.192,0.27,0.194,72.4,66.5,/international/boxscore/2022-02-09/Bayer-Giants-Leverkusen-at-Rostock-Seawolves/385807
-2022-02-12,ART,EIS,108.0,141.2,.564,.630,0.147,0.123,0.200,0.333,0.129,0.160,56.8,103.4,/international/boxscore/2022-02-12/Eisbaren-Bremerhaven-at-Artland-Dragons/385905
-2022-02-12,TUB,FIN,106.2,111.4,.448,.545,0.155,0.194,0.303,0.250,0.328,0.212,58.8,56.2,/international/boxscore/2022-02-12/Uni-Baskets-Paderborn-at-Walter-Tigers-Tubingen/385902
-2022-02-12,RAS,AST,116.1,104.7,.518,.595,0.242,0.268,0.313,0.286,0.618,0.224,59.2,38.0,/international/boxscore/2022-02-12/VFL-Astrostars-Bochum-at-SC-Rasta-Vechta/385906
-2022-02-13,TRI,BAY,113.7,108.2,.492,.507,0.189,0.189,0.421,0.321,0.308,0.162,67.5,41.6,/international/boxscore/2022-02-13/Bayer-Giants-Leverkusen-at-Gladiators-Trier/385909
-2022-02-13,ROST,NUE,143.5,95.7,.643,.448,0.082,0.150,0.229,0.286,0.214,0.310,87.8,34.0,/international/boxscore/2022-02-13/Nurnberg-Falcons-BC-at-Rostock-Seawolves/385908
+2022-02-12,ART,EIS,108.0,141.2,0.564,0.63,0.147,0.123,0.2,0.333,0.129,0.16,56.8,103.4,/international/boxscore/2022-02-12/Eisbaren-Bremerhaven-at-Artland-Dragons/385905
+2022-02-12,TUB,FIN,106.2,111.4,0.448,0.545,0.155,0.194,0.303,0.25,0.328,0.212,58.8,56.2,/international/boxscore/2022-02-12/Uni-Baskets-Paderborn-at-Walter-Tigers-Tubingen/385902
+2022-02-12,RAS,AST,116.1,104.7,0.518,0.595,0.242,0.268,0.313,0.286,0.618,0.224,59.2,38.0,/international/boxscore/2022-02-12/VFL-Astrostars-Bochum-at-SC-Rasta-Vechta/385906
+2022-02-13,TRI,BAY,113.7,108.2,0.492,0.507,0.189,0.189,0.421,0.321,0.308,0.162,67.5,41.6,/international/boxscore/2022-02-13/Bayer-Giants-Leverkusen-at-Gladiators-Trier/385909
+2022-02-13,ROST,NUE,143.5,95.7,0.643,0.448,0.082,0.15,0.229,0.286,0.214,0.31,87.8,34.0,/international/boxscore/2022-02-13/Nurnberg-Falcons-BC-at-Rostock-Seawolves/385908
+2022-02-15,ART,TUB,117.5,110.7,.521,.500,0.171,0.091,0.280,0.265,0.429,0.102,81.0,71.4,/international/boxscore/2022-02-15/Walter-Tigers-Tubingen-at-Artland-Dragons/385509
+2022-02-16,HAG,FIN,127.1,99.9,.599,.473,0.160,0.234,0.371,0.395,0.158,0.133,78.8,48.4,/international/boxscore/2022-02-16/Uni-Baskets-Paderborn-at-Phoenix-Hagen/385805
