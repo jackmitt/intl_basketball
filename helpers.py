@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import scipy.stats
 
 class Database:
     def __init__(self, keys = []):
@@ -964,3 +965,27 @@ def monthToInt(month):
         return (12)
     else:
         return (-1)
+
+def normalConjPrior(pMean, pVar, evidence):
+    a = 1 / pVar
+    b = len(evidence) / np.std(evidence)
+    return ((a*pMean + b*np.average(evidence)) / (a + b))
+
+#Current calibration: Half a Prior Season's worth of starting-level-minutes (500) ~ Two current season game's worth of starting-level-minutes (40)
+def bayesianPlayerStatsBeta(statName, priMean, priMin, eMean, eMin):
+    if ("TS%" in statName):
+        newbieMean = 0.45
+    elif ("TO%" in statName):
+        newbieMean = 0.19
+    elif (statName == "gsf_OREB%"):
+        newbieMean = 0.015
+    elif (statName == "pfc_OREB%"):
+        newbieMean = 0.08
+    elif ("FTR" in statName):
+        newbieMean = 0.25
+    if (priMin + eMin < 500):
+        priMean = ((500 - priMin) * newbieMean + priMean * priMin) / 500
+        priMin = 500
+    return (scipy.stats.beta.mean(priMean * priMin / 500 + eMean * eMin / 40, (1-priMean) * priMin / 500 + (1-eMean) * eMin / 40))
+
+#print (normalConjPrior(10, 4, [0,-30,-30,-30,-60]))

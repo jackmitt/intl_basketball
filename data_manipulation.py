@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from helpers import Database
+from helpers import bayesianPlayerStatsBeta
 import random
 import datetime
 from helpers import standardizeTeamName
@@ -13,6 +14,8 @@ from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LogisticRegression
 from numpy.linalg import inv
 import math
+import pickle
+import scipy.stats
 
 #for oddsportal - obsolete
 def combine_lines_and_stats(league):
@@ -89,10 +92,21 @@ def checkTeamNames(league):
             continue
 
 #for spreads and totals
-def combine_spreads_and_stats(league):
-    stats = pd.read_csv("./csv_data/" + league + "/gameStats.csv", encoding = "ISO-8859-1")
+def combine_spreads_and_stats(league, imputeScoresFromBackup = True):
+    stats = pd.read_csv("./csv_data/" + league + "/gameStatsNew.csv", encoding = "ISO-8859-1")
+    if (imputeScoresFromBackup):
+        backup = pd.read_csv("./csv_data/" + league + "/backup/combined.csv", encoding = "ISO-8859-1")
+        stats["Home Score"] = backup["Home Score"]
+        stats["Away Score"] = backup["Away Score"]
+        stats["Home"] = backup["Home"]
+        stats["Away"] = backup["Away"]
     odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score"])
+    A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score"])
+    for a in ["h_","a_"]:
+        for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+            for c in ["pg_","sg_","sf_","pf_","c_"]:
+                for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
+                    A.addColumn(a + b + c + d)
     for i, r in stats.iterrows():
         found = False
         print (i)
@@ -100,6 +114,7 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(r["Date"])
             A.addCellToRow(r["Home"])
             A.addCellToRow(r["Away"])
+            A.addCellToRow(r["Poss"])
             A.addCellToRow(r["h_ORtg"])
             A.addCellToRow(r["a_ORtg"])
             A.addCellToRow(r["h_eFG%"])
@@ -128,8 +143,13 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
-            A.addCellToRow(np.nan)
-            A.addCellToRow(np.nan)
+            A.addCellToRow(r["Home Score"])
+            A.addCellToRow(r["Away Score"])
+            for a in ["h_","a_"]:
+                for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+                    for c in ["pg_","sg_","sf_","pf_","c_"]:
+                        for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
+                            A.addCellToRow(r[a + b + c + d])
             A.appendRow()
             continue
         for index, row in odds.iterrows():
@@ -144,6 +164,7 @@ def combine_spreads_and_stats(league):
                 A.addCellToRow(r["Date"])
                 A.addCellToRow(standardizeTeamName(row["Home"], league))
                 A.addCellToRow(standardizeTeamName(row["Away"], league))
+                A.addCellToRow(r["Poss"])
                 A.addCellToRow(r["h_ORtg"])
                 A.addCellToRow(r["a_ORtg"])
                 A.addCellToRow(r["h_eFG%"])
@@ -174,6 +195,11 @@ def combine_spreads_and_stats(league):
                 A.addCellToRow(row["Away Close Total Odds"])
                 A.addCellToRow(row["Home Score"])
                 A.addCellToRow(row["Away Score"])
+                for a in ["h_","a_"]:
+                    for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+                        for c in ["pg_","sg_","sf_","pf_","c_"]:
+                            for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
+                                A.addCellToRow(r[a + b + c + d])
                 A.appendRow()
                 found = True
                 break
@@ -181,6 +207,7 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(r["Date"])
             A.addCellToRow(r["Home"])
             A.addCellToRow(r["Away"])
+            A.addCellToRow(r["Poss"])
             A.addCellToRow(r["h_ORtg"])
             A.addCellToRow(r["a_ORtg"])
             A.addCellToRow(r["h_eFG%"])
@@ -209,8 +236,13 @@ def combine_spreads_and_stats(league):
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
-            A.addCellToRow(np.nan)
-            A.addCellToRow(np.nan)
+            A.addCellToRow(r["Home Score"])
+            A.addCellToRow(r["Away Score"])
+            for a in ["h_","a_"]:
+                for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+                    for c in ["pg_","sg_","sf_","pf_","c_"]:
+                        for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
+                            A.addCellToRow(r[a + b + c + d])
             A.appendRow()
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
@@ -341,15 +373,47 @@ def tempAddTotalsFromBackupCombined(league):
     A.dictToCsv("./csv_data/" + league + "/combined.csv")
 
 def preMatchAverages(league):
+    with open("./csv_data/" + league + "/player_priors.pkl","rb") as inputFile:
+        priorDict = pickle.load(inputFile)
     stats = pd.read_csv("./csv_data/" + league + "/combined.csv", encoding = "ISO-8859-1")
-    A = Database(["Date","Home","Away","H_GP","A_GP","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","Actual Spread","Actual Total"])
+    A = Database(["Date","Home","Away","H_GP","A_GP","H_Pace","A_Pace","H_ORtg","A_ORtg","H_DRtg","A_DRtg","H_eFG%","A_eFG%","H_DeFG%","A_DeFG%","H_TO%","A_TO%","H_DTO%","A_DTO%","H_OR%","A_OR%","H_DOR%","A_DOR%","H_FTR","A_FTR","H_DFTR","A_DFTR","H_FIC","A_FIC","H_DFIC","A_DFIC","F_H_ORtg","F_A_ORtg","F_H_DRtg","F_A_DRtg","F_H_eFG%","F_A_eFG%","F_H_DeFG%","F_A_DeFG%","F_H_TO%","F_A_TO%","F_H_DTO%","F_A_DTO%","F_H_OR%","F_A_OR%","F_H_DOR%","F_A_DOR%","F_H_FTR","F_A_FTR","F_H_DFTR","F_A_DFTR","F_H_FIC","F_A_FIC","F_H_DFIC","F_A_DFIC","H_gsf_TS%","H_gsf_TO%","H_gsf_OREB%","H_gsf_FTR","H_pfc_TS%","H_pfc_TO%","H_pfc_OREB%","H_pfc_FTR","H_opp_gsf_TS%","H_opp_gsf_TO%","H_opp_gsf_OREB%","H_opp_gsf_FTR","H_opp_pfc_TS%","H_opp_pfc_TO%","H_opp_pfc_OREB%","H_opp_pfc_FTR","A_gsf_TS%","A_gsf_TO%","A_gsf_OREB%","A_gsf_FTR","A_pfc_TS%","A_pfc_TO%","A_pfc_OREB%","A_pfc_FTR","A_opp_gsf_TS%","A_opp_gsf_TO%","A_opp_gsf_OREB%","A_opp_gsf_FTR","A_opp_pfc_TS%","A_opp_pfc_TO%","A_opp_pfc_OREB%","A_opp_pfc_FTR","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","Actual Spread","Actual Total"])
+    curSeasonStart = 2013
     for index, row in stats.iterrows():
         if (index == 0 or abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(stats.at[index-1,"Date"].split("-")[0]), int(stats.at[index-1,"Date"].split("-")[1]), int(stats.at[index-1,"Date"].split("-")[2]))).days > 30):
             seasonDict = {}
+            curSeasonStart += 1
         if (row["Home"] not in seasonDict):
-            seasonDict[row["Home"]] = {"ORtg":[],"DRtg":[],"eFG%":[],"DeFG%":[],"TO%":[],"DTO%":[],"OR%":[],"DOR%":[],"FTR":[],"DFTR":[],"FIC":[],"DFIC":[],"adj_ORtg":[],"adj_DRtg":[],"adj_eFG%":[],"adj_DeFG%":[],"adj_TO%":[],"adj_DTO%":[],"adj_OR%":[],"adj_DOR%":[],"adj_FTR":[],"adj_DFTR":[],"adj_FIC":[],"adj_DFIC":[],"GP":0}
+            seasonDict[row["Home"]] = {"Pace":[],"ORtg":[],"DRtg":[],"eFG%":[],"DeFG%":[],"TO%":[],"DTO%":[],"OR%":[],"DOR%":[],"FTR":[],"DFTR":[],"FIC":[],"DFIC":[],"opp_gsf_TS%":[],"opp_gsf_TO%":[],"opp_gsf_OREB%":[],"opp_gsf_FTR":[],"opp_pfc_TS%":[],"opp_pfc_TO%":[],"opp_pfc_OREB%":[],"opp_pfc_FTR":[],"GP":0,"Players":{}}
+        for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+            for c in ["pg_","sg_","sf_","pf_","c_"]:
+                if (row["h_" + b + c + "name"] not in seasonDict[row["Home"]]["Players"]):
+                    seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]] = {"MIN_lastgame":0,"POS":c.split("_")[0]}
+                    for stat in ["PTS","FGA","FTA","TOV","MIN","OREB","opp_DREB"]:
+                        seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]][stat] = 0
+                    careerStats = {"PTS":0,"FGA":0,"FTA":0,"TOV":0,"orbTally":0,"MIN":0,"GP":0}
+                    for key in priorDict[row["h_" + b + c + "name"]]:
+                        if (int(key.split("-")[0]) >= curSeasonStart):
+                            break
+                        for x in ["PTS","FGA","FTA","TOV","MIN"]:
+                            careerStats[x] += priorDict[row["h_" + b + c + "name"]][key][x]
+                        careerStats["orbTally"] += priorDict[row["h_" + b + c + "name"]][key]["OREB%"] * priorDict[row["h_" + b + c + "name"]][key]["MIN"]
+                    seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["Priors"] = {"TS%":careerStats["PTS"] / (2*(careerStats["FGA"] + 0.44*careerStats["FTA"])),"TO%":careerStats["TOV"]/(careerStats["FGA"] + 0.44*careerStats["FTA"] + careerStats["TOV"]),"OREB%":careerStats["orbTally"]/careerStats["MIN"],"FTR":careerStats["FTA"]/careerStats["FGA"],"MIN":careerStats["MIN"]}
         if (row["Away"] not in seasonDict):
-            seasonDict[row["Away"]] = {"ORtg":[],"DRtg":[],"eFG%":[],"DeFG%":[],"TO%":[],"DTO%":[],"OR%":[],"DOR%":[],"FTR":[],"DFTR":[],"FIC":[],"DFIC":[],"adj_ORtg":[],"adj_DRtg":[],"adj_eFG%":[],"adj_DeFG%":[],"adj_TO%":[],"adj_DTO%":[],"adj_OR%":[],"adj_DOR%":[],"adj_FTR":[],"adj_DFTR":[],"adj_FIC":[],"adj_DFIC":[],"GP":0}
+            seasonDict[row["Away"]] = {"Pace":[],"ORtg":[],"DRtg":[],"eFG%":[],"DeFG%":[],"TO%":[],"DTO%":[],"OR%":[],"DOR%":[],"FTR":[],"DFTR":[],"FIC":[],"DFIC":[],"opp_gsf_TS%":[],"opp_gsf_TO%":[],"opp_gsf_OREB%":[],"opp_gsf_FTR":[],"opp_pfc_TS%":[],"opp_pfc_TO%":[],"opp_pfc_OREB%":[],"opp_pfc_FTR":[],"GP":0,"Players":{}}
+        for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+            for c in ["pg_","sg_","sf_","pf_","c_"]:
+                if (row["a_" + b + c + "name"] not in seasonDict[row["Away"]]["Players"]):
+                    seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]] = {"MIN_lastgame":0,"POS":c.split("_")[0]}
+                    for stat in ["PTS","FGA","FTA","TOV","MIN","OREB","opp_DREB"]:
+                        seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]][stat] = 0
+                    careerStats = {"PTS":0,"FGA":0,"FTA":0,"TOV":0,"orbTally":0,"MIN":0,"GP":0}
+                    for key in priorDict[row["a_" + b + c + "name"]]:
+                        if (int(key.split("-")[0]) >= curSeasonStart):
+                            break
+                        for x in ["PTS","FGA","FTA","TOV","MIN"]:
+                            careerStats[x] += priorDict[row["a_" + b + c + "name"]][key][x]
+                        careerStats["orbTally"] += priorDict[row["a_" + b + c + "name"]][key]["OREB%"] * priorDict[row["a_" + b + c + "name"]][key]["MIN"]
+                    seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"] = {"TS%":careerStats["PTS"] / (2*(careerStats["FGA"] + 0.44*careerStats["FTA"])),"TO%":careerStats["TOV"]/(careerStats["FGA"] + 0.44*careerStats["FTA"] + careerStats["TOV"]),"OREB%":careerStats["orbTally"]/careerStats["MIN"],"FTR":careerStats["FTA"]/careerStats["FGA"],"MIN":careerStats["MIN"]}
         if (seasonDict[row["Away"]]["GP"] >= 5 and seasonDict[row["Home"]]["GP"] >= 5):
             A.addCellToRow(row["Date"])
             A.addCellToRow(row["Home"])
@@ -406,56 +470,79 @@ def preMatchAverages(league):
             A.addCellToRow(np.average(seasonDict[row["Home"]]["DFIC"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
             A.addCellToRow(np.average(seasonDict[row["Away"]]["DFIC"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
 
-            #seems like these adjusted stats suck - but why
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_ORtg"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_ORtg"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DRtg"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DRtg"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_eFG%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_eFG%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DeFG%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DeFG%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_TO%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_TO%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DTO%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DTO%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_OR%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_OR%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DOR%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DOR%"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_FTR"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_FTR"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DFTR"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DFTR"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_FIC"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_FIC"]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DFIC"]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DFIC"]))
-            #
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_ORtg"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_ORtg"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DRtg"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DRtg"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_eFG%"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_eFG%"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DeFG%"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DeFG%"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_TO%"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_TO%"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DTO%"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DTO%"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_OR%"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_OR%"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DOR%"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DOR%"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_FTR"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_FTR"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DFTR"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DFTR"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_FIC"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_FIC"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Home"]]["adj_DFIC"][seasonDict[row["Home"]]["GP"] - 5:seasonDict[row["Home"]]["GP"]]))
-            # A.addCellToRow(np.average(seasonDict[row["Away"]]["adj_DFIC"][seasonDict[row["Away"]]["GP"] - 5:seasonDict[row["Away"]]["GP"]]))
+
+
+            fourf = {"TS%":0,"TO%":0,"OREB%":0,"FTR":0,"MIN":0}
+            for key in seasonDict[row["Home"]]["Players"]:
+                if (seasonDict[row["Home"]]["Players"][key]["POS"] == "pg" or seasonDict[row["Home"]]["Players"][key]["POS"] == "sg" or seasonDict[row["Home"]]["Players"][key]["POS"] == "sf"):
+                    fourf["TS%"] += bayesianPlayerStatsBeta("gsf_TS%", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TS%"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["PTS"] / (2*(seasonDict[row["Home"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Home"]]["Players"][key]["FTA"])), seasonDict[row["Home"]]["Players"][key]["MIN"]) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["TO%"] += bayesianPlayerStatsBeta("gsf_TO%", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TO%"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["TOV"] / (seasonDict[row["Home"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Home"]]["Players"][key]["FTA"] + seasonDict[row["Home"]]["Players"][key]["TOV"]), seasonDict[row["Home"]]["Players"][key]["MIN"]) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["OREB%"] += (bayesianPlayerStatsBeta("gsf_OREB%", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["OREB%"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["OREB"] / (seasonDict[row["Home"]]["Players"][key]["OREB"] + seasonDict[row["Home"]]["Players"][key]["opp_DREB"]), seasonDict[row["Home"]]["Players"][key]["MIN"])) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["FTR"] += bayesianPlayerStatsBeta("gsf_FTA", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["FTA"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["FTA"] / seasonDict[row["Home"]]["Players"][key]["FGA"], seasonDict[row["Home"]]["Players"][key]["MIN"]) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["MIN"] += seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+            A.addCellToRow(fourf["TS%"] / fourf["MIN"])
+            A.addCellToRow(fourf["TO%"] / fourf["MIN"])
+            A.addCellToRow(fourf["OREB%"] / fourf["MIN"])
+            A.addCellToRow(fourf["FTR"] / fourf["MIN"])
+
+            fourf = {"TS%":0,"TO%":0,"OREB%":0,"FTR":0,"MIN":0}
+            for key in seasonDict[row["Home"]]["Players"]:
+                if (seasonDict[row["Home"]]["Players"][key]["POS"] == "pf" or seasonDict[row["Home"]]["Players"][key]["POS"] == "c"):
+                    fourf["TS%"] += bayesianPlayerStatsBeta("pfc_TS%", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TS%"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["PTS"] / (2*(seasonDict[row["Home"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Home"]]["Players"][key]["FTA"])), seasonDict[row["Home"]]["Players"][key]["MIN"]) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["TO%"] += bayesianPlayerStatsBeta("pfc_TO%", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TO%"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["TOV"] / (seasonDict[row["Home"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Home"]]["Players"][key]["FTA"] + seasonDict[row["Home"]]["Players"][key]["TOV"]), seasonDict[row["Home"]]["Players"][key]["MIN"]) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["OREB%"] += (bayesianPlayerStatsBeta("pfc_OREB%", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["OREB%"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["OREB"] / (seasonDict[row["Home"]]["Players"][key]["OREB"] + seasonDict[row["Home"]]["Players"][key]["opp_DREB"]), seasonDict[row["Home"]]["Players"][key]["MIN"])) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["FTR"] += bayesianPlayerStatsBeta("pfc_FTA", seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["FTA"], seasonDict[row["Home"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Home"]]["Players"][key]["FTA"] / seasonDict[row["Home"]]["Players"][key]["FGA"], seasonDict[row["Home"]]["Players"][key]["MIN"]) * seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+                    fourf["MIN"] += seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"]
+            A.addCellToRow(fourf["TS%"] / fourf["MIN"])
+            A.addCellToRow(fourf["TO%"] / fourf["MIN"])
+            A.addCellToRow(fourf["OREB%"] / fourf["MIN"])
+            A.addCellToRow(fourf["FTR"] / fourf["MIN"])
+
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_TS%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_TO%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_OREB%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_FTR"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_TS%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_TO%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_OREB%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_FTR"]))
+
+            fourf = {"TS%":0,"TO%":0,"OREB%":0,"FTR":0,"MIN":0}
+            for key in seasonDict[row["Away"]]["Players"]:
+                if (seasonDict[row["Away"]]["Players"][key]["POS"] == "pg" or seasonDict[row["Away"]]["Players"][key]["POS"] == "sg" or seasonDict[row["Away"]]["Players"][key]["POS"] == "sf"):
+                    fourf["TS%"] += bayesianPlayerStatsBeta("gsf_TS%", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TS%"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["PTS"] / (2*(seasonDict[row["Away"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Away"]]["Players"][key]["FTA"])), seasonDict[row["Away"]]["Players"][key]["MIN"]) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["TO%"] += bayesianPlayerStatsBeta("gsf_TO%", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TO%"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["TOV"] / (seasonDict[row["Away"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Away"]]["Players"][key]["FTA"] + seasonDict[row["Away"]]["Players"][key]["TOV"]), seasonDict[row["Away"]]["Players"][key]["MIN"]) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["OREB%"] += (bayesianPlayerStatsBeta("gsf_OREB%", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["OREB%"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["OREB"] / (seasonDict[row["Away"]]["Players"][key]["OREB"] + seasonDict[row["Away"]]["Players"][key]["opp_DREB"]), seasonDict[row["Away"]]["Players"][key]["MIN"])) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["FTR"] += bayesianPlayerStatsBeta("gsf_FTA", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["FTA"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["FTA"] / seasonDict[row["Away"]]["Players"][key]["FGA"], seasonDict[row["Away"]]["Players"][key]["MIN"]) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["MIN"] += seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+            A.addCellToRow(fourf["TS%"] / fourf["MIN"])
+            A.addCellToRow(fourf["TO%"] / fourf["MIN"])
+            A.addCellToRow(fourf["OREB%"] / fourf["MIN"])
+            A.addCellToRow(fourf["FTR"] / fourf["MIN"])
+
+            fourf = {"TS%":0,"TO%":0,"OREB%":0,"FTR":0,"MIN":0}
+            for key in seasonDict[row["Away"]]["Players"]:
+                if (seasonDict[row["Away"]]["Players"][key]["POS"] == "pf" or seasonDict[row["Away"]]["Players"][key]["POS"] == "c"):
+                    fourf["TS%"] += bayesianPlayerStatsBeta("pfc_TS%", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TS%"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["PTS"] / (2*(seasonDict[row["Away"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Away"]]["Players"][key]["FTA"])), seasonDict[row["Away"]]["Players"][key]["MIN"]) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["TO%"] += bayesianPlayerStatsBeta("pfc_TO%", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["TO%"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["TOV"] / (seasonDict[row["Away"]]["Players"][key]["FGA"] + 0.44*seasonDict[row["Away"]]["Players"][key]["FTA"] + seasonDict[row["Away"]]["Players"][key]["TOV"]), seasonDict[row["Away"]]["Players"][key]["MIN"]) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["OREB%"] += (bayesianPlayerStatsBeta("pfc_OREB%", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["OREB%"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["OREB"] / (seasonDict[row["Away"]]["Players"][key]["OREB"] + seasonDict[row["Away"]]["Players"][key]["opp_DREB"]), seasonDict[row["Away"]]["Players"][key]["MIN"])) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["FTR"] += bayesianPlayerStatsBeta("pfc_FTA", seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["FTA"], seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["Priors"]["MIN"], seasonDict[row["Away"]]["Players"][key]["FTA"] / seasonDict[row["Away"]]["Players"][key]["FGA"], seasonDict[row["Away"]]["Players"][key]["MIN"]) * seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+                    fourf["MIN"] += seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"]
+            A.addCellToRow(fourf["TS%"] / fourf["MIN"])
+            A.addCellToRow(fourf["TO%"] / fourf["MIN"])
+            A.addCellToRow(fourf["OREB%"] / fourf["MIN"])
+            A.addCellToRow(fourf["FTR"] / fourf["MIN"])
+
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_TS%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_TO%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_OREB%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_gsf_FTR"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_TS%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_TO%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_OREB%"]))
+            A.addCellToRow(np.average(seasonDict[row["Away"]]["opp_pfc_FTR"]))
+
+
 
             A.addCellToRow(row["Home Open ML"])
             A.addCellToRow(row["Away Open ML"])
@@ -478,6 +565,7 @@ def preMatchAverages(league):
             A.addCellToRow(row["Away Score"] - row["Home Score"])
             A.addCellToRow(row["Away Score"] + row["Home Score"])
             A.appendRow()
+
         seasonDict[row["Home"]]["ORtg"].append(row["h_ORtg"])
         seasonDict[row["Away"]]["ORtg"].append(row["a_ORtg"])
         seasonDict[row["Home"]]["DRtg"].append(row["a_ORtg"])
@@ -503,69 +591,86 @@ def preMatchAverages(league):
         seasonDict[row["Home"]]["DFIC"].append(row["a_FIC"])
         seasonDict[row["Away"]]["DFIC"].append(row["h_FIC"])
 
-        #maybe should use priors for this in the future
-        # default_h_rtg = stats["h_ORtg"].mean()
-        # default_a_rtg = stats["a_ORtg"].mean()
-        # default_h_eFG = stats["h_eFG%"].mean()
-        # default_a_eFG = stats["a_eFG%"].mean()
-        # default_h_to = stats["h_TO%"].mean()
-        # default_a_to = stats["a_TO%"].mean()
-        # default_h_or = stats["h_OR%"].mean()
-        # default_a_or = stats["a_OR%"].mean()
-        # default_h_ftr = stats["h_FTR"].mean()
-        # default_a_ftr = stats["a_FTR"].mean()
-        # default_h_fic = stats["h_FIC"].mean()
-        # default_a_fic = stats["a_FIC"].mean()
-        # if (seasonDict[row["Home"]]["GP"] > 2):
-        #     seasonDict[row["Home"]]["adj_ORtg"].append(row["h_ORtg"] - np.average(seasonDict[row["Away"]]["DRtg"]))
-        #     seasonDict[row["Away"]]["adj_ORtg"].append(row["a_ORtg"] - np.average(seasonDict[row["Home"]]["DRtg"]))
-        #     seasonDict[row["Home"]]["adj_DRtg"].append(row["a_ORtg"] - np.average(seasonDict[row["Away"]]["ORtg"]))
-        #     seasonDict[row["Away"]]["adj_DRtg"].append(row["h_ORtg"] - np.average(seasonDict[row["Home"]]["ORtg"]))
-        #     seasonDict[row["Home"]]["adj_eFG%"].append(row["h_eFG%"] - np.average(seasonDict[row["Away"]]["DeFG%"]))
-        #     seasonDict[row["Away"]]["adj_eFG%"].append(row["a_eFG%"] - np.average(seasonDict[row["Home"]]["DeFG%"]))
-        #     seasonDict[row["Home"]]["adj_DeFG%"].append(row["a_eFG%"] - np.average(seasonDict[row["Away"]]["eFG%"]))
-        #     seasonDict[row["Away"]]["adj_DeFG%"].append(row["h_eFG%"] - np.average(seasonDict[row["Home"]]["eFG%"]))
-        #     seasonDict[row["Home"]]["adj_TO%"].append(row["h_TO%"] - np.average(seasonDict[row["Away"]]["DTO%"]))
-        #     seasonDict[row["Away"]]["adj_TO%"].append(row["a_TO%"] - np.average(seasonDict[row["Home"]]["DTO%"]))
-        #     seasonDict[row["Home"]]["adj_DTO%"].append(row["a_TO%"] - np.average(seasonDict[row["Away"]]["TO%"]))
-        #     seasonDict[row["Away"]]["adj_DTO%"].append(row["h_TO%"] - np.average(seasonDict[row["Home"]]["TO%"]))
-        #     seasonDict[row["Home"]]["adj_OR%"].append(row["h_OR%"] - np.average(seasonDict[row["Away"]]["DOR%"]))
-        #     seasonDict[row["Away"]]["adj_OR%"].append(row["a_OR%"] - np.average(seasonDict[row["Home"]]["DOR%"]))
-        #     seasonDict[row["Home"]]["adj_DOR%"].append(row["a_OR%"] - np.average(seasonDict[row["Away"]]["OR%"]))
-        #     seasonDict[row["Away"]]["adj_DOR%"].append(row["h_OR%"] - np.average(seasonDict[row["Home"]]["OR%"]))
-        #     seasonDict[row["Home"]]["adj_FTR"].append(row["h_FTR"] - np.average(seasonDict[row["Away"]]["DFTR"]))
-        #     seasonDict[row["Away"]]["adj_FTR"].append(row["a_FTR"] - np.average(seasonDict[row["Home"]]["DFTR"]))
-        #     seasonDict[row["Home"]]["adj_DFTR"].append(row["a_FTR"] - np.average(seasonDict[row["Away"]]["FTR"]))
-        #     seasonDict[row["Away"]]["adj_DFTR"].append(row["h_FTR"] - np.average(seasonDict[row["Home"]]["FTR"]))
-        #     seasonDict[row["Home"]]["adj_FIC"].append(row["h_FIC"] - np.average(seasonDict[row["Away"]]["DFIC"]))
-        #     seasonDict[row["Away"]]["adj_FIC"].append(row["a_FIC"] - np.average(seasonDict[row["Home"]]["DFIC"]))
-        #     seasonDict[row["Home"]]["adj_DFIC"].append(row["a_FIC"] - np.average(seasonDict[row["Away"]]["FIC"]))
-        #     seasonDict[row["Away"]]["adj_DFIC"].append(row["h_FIC"] - np.average(seasonDict[row["Home"]]["FIC"]))
-        # else:
-        #     seasonDict[row["Home"]]["adj_ORtg"].append(row["h_ORtg"] - default_h_rtg)
-        #     seasonDict[row["Away"]]["adj_ORtg"].append(row["a_ORtg"] - default_a_rtg)
-        #     seasonDict[row["Home"]]["adj_DRtg"].append(row["a_ORtg"] - default_a_rtg)
-        #     seasonDict[row["Away"]]["adj_DRtg"].append(row["h_ORtg"] - default_h_rtg)
-        #     seasonDict[row["Home"]]["adj_eFG%"].append(row["h_eFG%"] - default_h_eFG)
-        #     seasonDict[row["Away"]]["adj_eFG%"].append(row["a_eFG%"] - default_a_eFG)
-        #     seasonDict[row["Home"]]["adj_DeFG%"].append(row["a_eFG%"] - default_a_eFG)
-        #     seasonDict[row["Away"]]["adj_DeFG%"].append(row["h_eFG%"] - default_h_eFG)
-        #     seasonDict[row["Home"]]["adj_TO%"].append(row["h_TO%"] - default_h_to)
-        #     seasonDict[row["Away"]]["adj_TO%"].append(row["a_TO%"] - default_a_to)
-        #     seasonDict[row["Home"]]["adj_DTO%"].append(row["a_TO%"] - default_a_to)
-        #     seasonDict[row["Away"]]["adj_DTO%"].append(row["h_TO%"] - default_h_to)
-        #     seasonDict[row["Home"]]["adj_OR%"].append(row["h_OR%"] - default_h_or)
-        #     seasonDict[row["Away"]]["adj_OR%"].append(row["a_OR%"] - default_a_or)
-        #     seasonDict[row["Home"]]["adj_DOR%"].append(row["a_OR%"] - default_a_or)
-        #     seasonDict[row["Away"]]["adj_DOR%"].append(row["h_OR%"] - default_h_or)
-        #     seasonDict[row["Home"]]["adj_FTR"].append(row["h_FTR"] - default_h_ftr)
-        #     seasonDict[row["Away"]]["adj_FTR"].append(row["a_FTR"] - default_a_ftr)
-        #     seasonDict[row["Home"]]["adj_DFTR"].append(row["a_FTR"] - default_a_ftr)
-        #     seasonDict[row["Away"]]["adj_DFTR"].append(row["h_FTR"] - default_h_ftr)
-        #     seasonDict[row["Home"]]["adj_FIC"].append(row["h_FIC"] - default_h_fic)
-        #     seasonDict[row["Away"]]["adj_FIC"].append(row["a_FIC"] - default_a_fic)
-        #     seasonDict[row["Home"]]["adj_DFIC"].append(row["a_FIC"] - default_a_fic)
-        #     seasonDict[row["Away"]]["adj_DFIC"].append(row["h_FIC"] - default_h_fic)
+        #PLAYER STUFF
+        homeResults = {"gsf_PTS":0,"gsf_FGA":0,"gsf_FTA":0,"gsf_TOV":0,"gsf_OReb":0,"pfc_PTS":0,"pfc_FGA":0,"pfc_FTA":0,"pfc_TOV":0,"pfc_OReb":0,"DReb":0}
+        awayResults = {"gsf_PTS":0,"gsf_FGA":0,"gsf_FTA":0,"gsf_TOV":0,"gsf_OReb":0,"pfc_PTS":0,"pfc_FGA":0,"pfc_FTA":0,"pfc_TOV":0,"pfc_OReb":0,"DReb":0}
+        for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+            for c in ["pg_","sg_","sf_"]:
+                awayResults["gsf_PTS"] += row["a_" + b + c + "PTS"]
+                awayResults["gsf_FGA"] += int(row["a_" + b + c + "FGM-A"].split("-")[1])
+                awayResults["gsf_FTA"] += int(row["a_" + b + c + "FTM-A"].split("-")[1])
+                awayResults["gsf_TOV"] += row["a_" + b + c + "TO"]
+                awayResults["gsf_OReb"] += row["a_" + b + c + "OReb"]
+                awayResults["DReb"] += row["a_" + b + c + "DReb"]
+                homeResults["gsf_PTS"] += row["h_" + b + c + "PTS"]
+                homeResults["gsf_FGA"] += int(row["h_" + b + c + "FGM-A"].split("-")[1])
+                homeResults["gsf_FTA"] += int(row["h_" + b + c + "FTM-A"].split("-")[1])
+                homeResults["gsf_TOV"] += row["h_" + b + c + "TO"]
+                homeResults["gsf_OReb"] += row["h_" + b + c + "OReb"]
+                homeResults["DReb"] += row["h_" + b + c + "DReb"]
+            for c in ["pf_","c_"]:
+                awayResults["pfc_PTS"] += row["a_" + b + c + "PTS"]
+                awayResults["pfc_FGA"] += int(row["a_" + b + c + "FGM-A"].split("-")[1])
+                awayResults["pfc_FTA"] += int(row["a_" + b + c + "FTM-A"].split("-")[1])
+                awayResults["pfc_TOV"] += row["a_" + b + c + "TO"]
+                awayResults["pfc_OReb"] += row["a_" + b + c + "OReb"]
+                awayResults["DReb"] += row["a_" + b + c + "DReb"]
+                homeResults["pfc_PTS"] += row["h_" + b + c + "PTS"]
+                homeResults["pfc_FGA"] += int(row["h_" + b + c + "FGM-A"].split("-")[1])
+                homeResults["pfc_FTA"] += int(row["h_" + b + c + "FTM-A"].split("-")[1])
+                homeResults["pfc_TOV"] += row["h_" + b + c + "TO"]
+                homeResults["pfc_OReb"] += row["h_" + b + c + "OReb"]
+                homeResults["DReb"] += row["h_" + b + c + "DReb"]
+
+        seasonDict[row["Home"]]["opp_gsf_TS%"].append(awayResults["gsf_PTS"] / (2*(awayResults["gsf_FGA"] + 0.44*awayResults["gsf_FTA"])))
+        seasonDict[row["Home"]]["opp_gsf_TO%"].append(awayResults["gsf_TOV"]/(awayResults["gsf_FGA"] + 0.44*awayResults["gsf_FTA"] + awayResults["gsf_TOV"]))
+        seasonDict[row["Home"]]["opp_gsf_OREB%"].append(awayResults["gsf_OReb"] / (awayResults["gsf_OReb"] + homeResults["DReb"]))
+        seasonDict[row["Home"]]["opp_gsf_FTR"].append(awayResults["gsf_FTA"] / awayResults["gsf_FGA"])
+        seasonDict[row["Home"]]["opp_pfc_TS%"].append(awayResults["pfc_PTS"] / (2*(awayResults["pfc_FGA"] + 0.44*awayResults["pfc_FTA"])))
+        seasonDict[row["Home"]]["opp_pfc_TO%"].append(awayResults["pfc_TOV"]/(awayResults["pfc_FGA"] + 0.44*awayResults["pfc_FTA"] + awayResults["pfc_TOV"]))
+        seasonDict[row["Home"]]["opp_pfc_OREB%"].append(awayResults["pfc_OReb"] / (awayResults["pfc_OReb"] + homeResults["DReb"]))
+        seasonDict[row["Home"]]["opp_pfc_FTR"].append(awayResults["pfc_FTA"] / awayResults["pfc_FGA"])
+
+        seasonDict[row["Away"]]["opp_gsf_TS%"].append(homeResults["gsf_PTS"] / (2*(homeResults["gsf_FGA"] + 0.44*homeResults["gsf_FTA"])))
+        seasonDict[row["Away"]]["opp_gsf_TO%"].append(homeResults["gsf_TOV"]/(homeResults["gsf_FGA"] + 0.44*homeResults["gsf_FTA"] + homeResults["gsf_TOV"]))
+        seasonDict[row["Away"]]["opp_gsf_OREB%"].append(homeResults["gsf_OReb"] / (homeResults["gsf_OReb"] + awayResults["DReb"]))
+        seasonDict[row["Away"]]["opp_gsf_FTR"].append(homeResults["gsf_FTA"] / homeResults["gsf_FGA"])
+        seasonDict[row["Away"]]["opp_pfc_TS%"].append(homeResults["pfc_PTS"] / (2*(homeResults["pfc_FGA"] + 0.44*homeResults["pfc_FTA"])))
+        seasonDict[row["Away"]]["opp_pfc_TO%"].append(homeResults["pfc_TOV"]/(homeResults["pfc_FGA"] + 0.44*homeResults["pfc_FTA"] + homeResults["pfc_TOV"]))
+        seasonDict[row["Away"]]["opp_pfc_OREB%"].append(homeResults["pfc_OReb"] / (homeResults["pfc_OReb"] + awayResults["DReb"]))
+        seasonDict[row["Away"]]["opp_pfc_FTR"].append(homeResults["pfc_FTA"] / homeResults["pfc_FGA"])
+
+        playersInGame = []
+        for b in ["s_","r1_","r2_","r3_","r4_"]:
+            for c in ["pg_","sg_","sf_","pf_","c_"]:
+                playersInGame.append(row["h_" + b + c + "name"])
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["PTS"] += row["h_" + b + c + "PTS"]
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["FGA"] += int(row["h_" + b + c + "FGM-A"].split("-")[1])
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["FTA"] += int(row["h_" + b + c + "FTM-A"].split("-")[1])
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["TOV"] += row["h_" + b + c + "TO"]
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["OREB"] += row["h_" + b + c + "OReb"]
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["opp_DREB"] += oppDreb * 40 / (row["h_" + b + c + "seconds"] / 60)
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["MIN"] += row["h_" + b + c + "seconds"] / 60
+                seasonDict[row["Home"]]["Players"][row["h_" + b + c + "name"]]["MIN_lastgame"] = row["h_" + b + c + "seconds"] / 60
+        for key in seasonDict[row["Home"]]["Players"]:
+            if (key not in playersInGame):
+                seasonDict[row["Home"]]["Players"][key]["MIN_lastgame"] = 0
+        playersInGame = []
+        for b in ["s_","r1_","r2_","r3_","r4_"]:
+            for c in ["pg_","sg_","sf_","pf_","c_"]:
+                playersInGame.append(row["a_" + b + c + "name"])
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["PTS"] += row["a_" + b + c + "PTS"]
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["FGA"] += int(row["a_" + b + c + "FGM-A"].split("-")[1])
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["FTA"] += int(row["a_" + b + c + "FTM-A"].split("-")[1])
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["TOV"] += row["a_" + b + c + "TO"]
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["OREB"] += row["a_" + b + c + "OReb"]
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["opp_DREB"] += oppDreb * 40 / (row["a_" + b + c + "seconds"] / 60)
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["MIN"] += row["a_" + b + c + "seconds"] / 60
+                seasonDict[row["Away"]]["Players"][row["a_" + b + c + "name"]]["MIN_lastgame"] = row["a_" + b + c + "seconds"] / 60
+        for key in seasonDict[row["Away"]]["Players"]:
+            if (key not in playersInGame):
+                seasonDict[row["Away"]]["Players"][key]["MIN_lastgame"] = 0
+
 
         seasonDict[row["Away"]]["GP"] += 1
         seasonDict[row["Home"]]["GP"] += 1
@@ -868,3 +973,6 @@ def aggregateModelPredictions(league):
     test = test.dropna()
 
     test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
+
+
+preMatchAverages("Spain")

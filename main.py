@@ -3,6 +3,7 @@ from scrapers import realgm
 from scrapers import nowgoal
 from scrapers import scrapePinnacle
 from scrapers import updateSeasonStats
+from scrapers import realgmPlayerPriorsPartTwo
 import data_manipulation as dm
 import prediction_evaluation as pe
 import pandas as pd
@@ -11,10 +12,11 @@ import smtplib, ssl
 
 
 #leagues = ["Italy2"]
-leagues = ["Spain","France","Italy","Germany","VTB","Italy2","France2","Germany2","Euroleague","Adriatic","Australia","Spain2","Greece"]
+leagues = ["France2","Euroleague","Adriatic"]
 for league in leagues:
     print (league + "---------------------------------------------------------------------------")
-    realgm(league, 1, 1, 1, leagueBased = True)
+    #realgm(league, 1, 1, 1, leagueBased = True)
+    realgmPlayerPriorsPartTwo(league)
     #dm.checkTeamNames(league)
     #dm.combine_spreads_and_stats(league)
     #dm.tempAddTotalsFromBackupCombined(league)

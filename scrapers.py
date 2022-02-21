@@ -12,6 +12,7 @@ from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from helpers import standardizeTeamName
+import pickle
 
 def americanToDecimal(odds):
     if (odds < 0):
@@ -285,6 +286,81 @@ def realgm(urlRoot, year, month, day, leagueBased = False):
         browser.close()
         realgm(urlRoot, year, month, day, leagueBased = leagueBased)
     A.dictToCsv("./csv_data/" + league + "/gameStatsNew.csv")
+    browser.close()
+
+def realgmPlayerPriors(league):
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
+    browser.maximize_window()
+    if (not exists('./realgm_playerUrls/' + league + '.csv')):
+        count = 0
+        gameUrls = pd.read_csv('./realgm_gameUrls/' + league + '.csv', encoding = "ISO-8859-1")["url"].tolist()
+        playerUrls = []
+        for game in gameUrls:
+            browser.get("https://basketball.realgm.com/" + game)
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            for team in soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable"):
+                for x in team.find_all("a"):
+                    if (x.has_attr("href")):
+                        if (x['href'] not in playerUrls):
+                            playerUrls.append(x['href'])
+        save = {}
+        save["urls"] = playerUrls
+        dfFinal = pd.DataFrame.from_dict(save)
+        dfFinal = dfFinal.drop_duplicates()
+        dfFinal.to_csv('./realgm_playerUrls/' + league + '.csv', index = False)
+    else:
+        playerUrls = pd.read_csv('./realgm_gameUrls/' + league + '.csv', encoding = "ISO-8859-1")["url"].tolist()
+
+    dict = {}
+    browser.close()
+
+def realgmPlayerPriorsPartTwo(league):
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
+    browser.maximize_window()
+    playerUrls = pd.read_csv('./realgm_playerUrls/' + league + '.csv', encoding = "ISO-8859-1")["urls"].tolist()
+
+    dict = {}
+    for url in playerUrls:
+        browser.get("https://basketball.realgm.com" + url)
+        soup = BeautifulSoup(browser.page_source, 'html.parser')
+        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")] = {}
+        for x in soup.find_all("h2"):
+            if (x.text == "International Regular Season Stats - Totals"):
+                for season in x.find_next().find_next_sibling().find("tbody").find_all("tr"):
+                    print ("-------------------------------------------------------------")
+                    print (url.split("player/")[1].split("/Summary")[0].replace("-", " "))
+                    print ("-------------------------------------------------------------")
+                    if ("multiple-teams-highlight" not in season["class"]):
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text] = {}
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["GP"] = season.find_all("td")[3].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["MIN"] = season.find_all("td")[5].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FGM"] = season.find_all("td")[6].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FGA"] = season.find_all("td")[7].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["3PM"] = season.find_all("td")[9].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["3PA"] = season.find_all("td")[10].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FTM"] = season.find_all("td")[12].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FTA"] = season.find_all("td")[13].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["OREB"] = season.find_all("td")[15].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["DREB"] = season.find_all("td")[16].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["AST"] = season.find_all("td")[18].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["STL"] = season.find_all("td")[19].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["BLK"] = season.find_all("td")[20].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["TOV"] = season.find_all("td")[22].text
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["PTS"] = season.find_all("td")[23].text
+            elif (x.text == "International Regular Season Stats - Advanced Stats"):
+                for season in x.find_next().find_next_sibling().find("tbody").find_all("tr"):
+                    if ("multiple-teams-highlight" not in season["class"]):
+                        dict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["OREB%"] = season.find_all("td")[7].text
+    with open("./csv_data/" + league + "/player_priors.pkl", "wb") as f:
+        pickle.dump(dict, f)
     browser.close()
 
 def nowgoal(urlRoot, startMonth, league):
