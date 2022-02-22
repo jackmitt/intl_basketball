@@ -10,7 +10,7 @@ import pandas as pd
 import datetime
 import smtplib, ssl
 
-leagues = ["Australia"]
+leagues = ["Adriatic","VTB"]
 for league in leagues:
     print (league + "---------------------------------------------------------------------------")
-    realgmPlayerPriors(league)
+    dm.preMatchAverages(league)

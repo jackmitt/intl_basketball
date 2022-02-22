@@ -12,31 +12,33 @@ import smtplib, ssl
 
 
 #leagues = ["Italy2"]
-leagues = ["France2","Euroleague","Adriatic"]
+leagues = ["Spain","France","Germany","Italy","Euroleague","France2","Italy2","Adriatic","VTB"]
 for league in leagues:
     print (league + "---------------------------------------------------------------------------")
     #realgm(league, 1, 1, 1, leagueBased = True)
-    realgmPlayerPriorsPartTwo(league)
+    #realgmPlayerPriorsPartTwo(league)
     #dm.checkTeamNames(league)
     #dm.combine_spreads_and_stats(league)
     #dm.tempAddTotalsFromBackupCombined(league)
     #dm.preMatchAverages(league)
+    #dm.interactionTerms(league)
     #dm.train_test_split(league)
     #pe.betWithLines(20000, league = league)
     #dm.predictions(league)
-    #dm.aggregateModelPredictions(league)
+    dm.aggregateModelPredictions(league)
     #pe.simulateKellyBets(20000, 1, "Open", league)
     #pe.simulateKellyBets(20000, 1, "Close", league)
     #pe.kellySpreadBets(20000, 1, "Open", league, uf = 0)
     #pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
     #pe.betWithLines(20000, league)
-    #pe.analyzeMyLines(league, "Total")
+    pe.analyzeMyLines(league, "Spread")
+    #pe.agreeAnalysis(league, "Spread")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 
 
 
-
-
+#Best spread model - P_ interactions AND normal player stats - no team stats 3.5-7.5 spreads
+#Best total model - P_ interactions AND normal player stats - no team stats
 
 
 

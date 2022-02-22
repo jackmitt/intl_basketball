@@ -972,6 +972,7 @@ def normalConjPrior(pMean, pVar, evidence):
     return ((a*pMean + b*np.average(evidence)) / (a + b))
 
 #Current calibration: Half a Prior Season's worth of starting-level-minutes (500) ~ Two current season game's worth of starting-level-minutes (40)
+#prior is scaled by minutes played instead of games played - could go even further and scale it by denominator in advanced stats?
 def bayesianPlayerStatsBeta(statName, priMean, priMin, eMean, eMin):
     if ("TS%" in statName):
         newbieMean = 0.45
@@ -987,5 +988,6 @@ def bayesianPlayerStatsBeta(statName, priMean, priMin, eMean, eMin):
         priMean = ((500 - priMin) * newbieMean + priMean * priMin) / 500
         priMin = 500
     return (scipy.stats.beta.mean(priMean * priMin / 500 + eMean * eMin / 40, (1-priMean) * priMin / 500 + (1-eMean) * eMin / 40))
+
 
 #print (normalConjPrior(10, 4, [0,-30,-30,-30,-60]))
