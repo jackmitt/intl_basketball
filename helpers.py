@@ -375,17 +375,17 @@ def standardizeTeamName(name, league):
             return ("NIZ")
         elif ("sassari" in name):
             return ("SAS")
-        elif ("efes pilsen" in name):
+        elif ("efes pilsen" in name or "anadolu efes" in name):
             return ("EFE")
         elif ("kazan" in name):
-            return ("UNICS")
+            return ("UNI")
         elif ("cedevita zagreb" in name):
             return ("CED")
-        elif ("unicaja" in name):
-            return ("UNI")
+        # elif ("unicaja" in name):
+        #     return ("UNI")
         elif ("limoges" in name):
             return ("CSP")
-        elif ("cabi electra" in name):
+        elif ("cabi electra" in name or "tel-aviv" in name):
             return ("MAC")
         elif ("alba berlin" in name):
             return ("BER")
@@ -395,7 +395,7 @@ def standardizeTeamName(name, league):
             return ("FCB")
         elif ("bayern " in name):
             return ("BAY")
-        elif ("ea7-" in name):
+        elif ("ea7-" in name or "olimpia milano" in name):
             return ("MIL")
         elif ("fenerbahce" in name):
             return ("FEN")
@@ -413,7 +413,7 @@ def standardizeTeamName(name, league):
             return ("GAL")
         elif ("valencia" in name):
             return ("VAL")
-        elif ("olympiacos" in name):
+        elif ("olympiacos" in name or "olympiakos" in name):
             return ("OLY")
         elif ("khimki" in name):
             return ("KHI")
@@ -439,6 +439,8 @@ def standardizeTeamName(name, league):
             return ("LYV")
         elif ("zenit " in name):
             return ("ZEN")
+        elif ("monaco" in name):
+            return ("ASM")
         else:
             return ("ERROR: " + name)
 

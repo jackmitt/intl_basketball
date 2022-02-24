@@ -670,11 +670,12 @@ def nowgoal(urlRoot, startMonth, league):
     browser.close()
 
 def scrapePinnacle(league):
-    A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds"])
+    A = Database(["Date","Home","Away","Home ML","Away ML","Spread","Home Spread Odds","Away Spread Odds","Total","Over Total Odds","Under Total Odds"])
     driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--window-size=1325x744")
     browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
     browser.maximize_window()
     if (league == "Germany"):
@@ -693,14 +694,14 @@ def scrapePinnacle(league):
         browser.get("https://www.pinnacle.com/en/basketball/italy-lega-nazionale-pallacanestro-gold/matchups#period:0")
     if (league == "VTB"):
         browser.get("https://www.pinnacle.com/en/basketball/europe-vtb-united-league/matchups#period:0")
-    #if (league == "Spain2")
-        #
+    if (league == "Euroleague"):
+        browser.get("https://www.pinnacle.com/en/basketball/europe-euroleague/matchups#period:0")
     time.sleep(5)
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     main = soup.find(class_="contentBlock square")
     for game in main.contents:
         try:
-            fail = game.find_all("span")[3].text
+            fail = game.find_all("span")[8].text
         except:
             continue
         A.addCellToRow(datetime.date.today())
@@ -716,12 +717,22 @@ def scrapePinnacle(league):
         A.addCellToRow(game.find_all("span")[3].text)
         A.addCellToRow(game.find_all("span")[4].text)
         A.addCellToRow(game.find_all("span")[6].text)
+        A.addCellToRow(game.find_all("span")[9].text)
+        A.addCellToRow(game.find_all("span")[10].text)
+        A.addCellToRow(game.find_all("span")[12].text)
         A.appendRow()
     browser.close()
     return (A.getDataFrame())
 
 def updateSeasonStats(league, last_date):
-    A = Database(["Date","Home","Away","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
+    with open("./csv_data/" + league + "/player_priors.pkl","rb") as inputFile:
+        priorDict = pickle.load(inputFile)
+    A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
+    for a in ["h_","a_"]:
+        for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
+            for c in ["pg_","sg_","sf_","pf_","c_"]:
+                for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
+                    A.addColumn(a + b + c + d)
     driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
@@ -730,6 +741,7 @@ def updateSeasonStats(league, last_date):
     browser.maximize_window()
     curDate = last_date +datetime.timedelta(days=1)
     gameUrls = []
+    playerUrls = []
     if (league == "Germany"):
         urlRoot = "https://basketball.realgm.com/international/league/15/German-BBL/scores/"
     elif (league == "Spain"):
@@ -746,6 +758,8 @@ def updateSeasonStats(league, last_date):
         urlRoot = "https://basketball.realgm.com/international/league/54/Italian-Serie-A2-Basket/scores/"
     elif (league == "VTB"):
         urlRoot = "https://basketball.realgm.com/international/league/35/VTB-United-League/scores/"
+    elif (league == "Euroleague"):
+        urlRoot = "https://basketball.realgm.com/international/league/1/Euroleague/scores/"
     while (curDate < datetime.date.today()+datetime.timedelta(days=1)):
         browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
         soup = BeautifulSoup(browser.page_source, 'html.parser')
@@ -761,12 +775,9 @@ def updateSeasonStats(league, last_date):
         browser.get("https://basketball.realgm.com" + game)
         soup = BeautifulSoup(browser.page_source, 'html.parser')
         A.addCellToRow(game.split("boxscore/")[1].split("/")[0])
-        if ("ERROR" in standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[1].text, league)):
-            print (standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[1].text, league))
-        A.addCellToRow(standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[1].text, league))
-        if ("ERROR" in standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[0].text, league)):
-            print (standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[0].text, league))
-        A.addCellToRow(standardizeTeamName(soup.find(class_="boxscore-gamedetails").find_all("a")[0].text, league))
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[0].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[0].text)
+        A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[1].text)
         A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[2].text)
         A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[0].find_all("td")[2].text)
         A.addCellToRow(soup.find_all(class_="basketball force-table")[2].find("tbody").find_all("tr")[1].find_all("td")[1].text)
@@ -780,5 +791,102 @@ def updateSeasonStats(league, last_date):
         A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
         A.addCellToRow(soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tfoot").find_all("tr")[1].find_all("td")[8].text)
         A.addCellToRow(game)
+
+        for z in ["h", "a"]:
+            if (z == "h"):
+                hdc = soup.find(class_="large-column-left").find_all("table")[1].find("tbody")
+                hbs = soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[1].find("tbody")
+            else:
+                hdc = soup.find(class_="large-column-left").find_all("table")[0].find("tbody")
+                hbs = soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable")[0].find("tbody")
+            roles = ["s","r","r","r","r","l","l","l"]
+            for tr in hdc.find_all("tr"):
+                while (tr.find("strong").text == "Lim PT" and roles[0] == "r"):
+                    for i in range(14*5):
+                        A.addCellToRow(np.nan)
+                    del roles[0]
+                for td in tr.find_all("td"):
+                    if (td["data-th"] != "Role"):
+                        try:
+                            curDude = td.find("a").text
+                        except:
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            A.addCellToRow(np.nan)
+                            continue
+                        A.addCellToRow(curDude)
+                        for p in hbs.find_all("tr"):
+                            if (p.find("a").text == curDude):
+                                A.addCellToRow(int(p.find_all("td")[4].text.split(":")[0]) * 60 + int(p.find_all("td")[4].text.split(":")[1]))
+                                A.addCellToRow(p.find_all("td")[5].text)
+                                A.addCellToRow(p.find_all("td")[6].text)
+                                A.addCellToRow(p.find_all("td")[7].text)
+                                A.addCellToRow(p.find_all("td")[8].text)
+                                A.addCellToRow(p.find_all("td")[9].text)
+                                A.addCellToRow(p.find_all("td")[10].text)
+                                A.addCellToRow(p.find_all("td")[12].text)
+                                A.addCellToRow(p.find_all("td")[13].text)
+                                A.addCellToRow(p.find_all("td")[14].text)
+                                A.addCellToRow(p.find_all("td")[15].text)
+                                A.addCellToRow(p.find_all("td")[16].text)
+                                A.addCellToRow(p.find_all("td")[17].text)
+                del roles[0]
+            for i in range(len(roles)*5*14):
+                A.addCellToRow(np.nan)
+
         A.appendRow()
-    print (A.getDataFrame())
+
+
+        for team in soup.find_all(class_="tablesaw compact tablesaw-swipe tablesaw-sortable"):
+            for x in team.find_all("a"):
+                if (x.has_attr("href")):
+                    if (x['href'] not in playerUrls):
+                        if (x['href'].split("player/")[1].split("/Summary")[0].replace("-", " ") not in priorDict):
+                            playerUrls.append(x['href'])
+
+    A.dictToCsv("./csv_data/" + league + "/Current Season/gameStatsNew.csv")
+
+    for url in playerUrls:
+        browser.get("https://basketball.realgm.com" + url)
+        soup = BeautifulSoup(browser.page_source, 'html.parser')
+        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")] = {}
+        for x in soup.find_all("h2"):
+            if (x.text == "International Regular Season Stats - Totals"):
+                for season in x.find_next().find_next_sibling().find("tbody").find_all("tr"):
+                    if ("multiple-teams-highlight" not in season["class"]):
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text] = {}
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["GP"] = season.find_all("td")[3].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["MIN"] = season.find_all("td")[5].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FGM"] = season.find_all("td")[6].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FGA"] = season.find_all("td")[7].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["3PM"] = season.find_all("td")[9].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["3PA"] = season.find_all("td")[10].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FTM"] = season.find_all("td")[12].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["FTA"] = season.find_all("td")[13].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["OREB"] = season.find_all("td")[15].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["DREB"] = season.find_all("td")[16].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["AST"] = season.find_all("td")[18].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["STL"] = season.find_all("td")[19].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["BLK"] = season.find_all("td")[20].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["TOV"] = season.find_all("td")[22].text
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["PTS"] = season.find_all("td")[23].text
+            elif (x.text == "International Regular Season Stats - Advanced Stats"):
+                for season in x.find_next().find_next_sibling().find("tbody").find_all("tr"):
+                    if ("multiple-teams-highlight" not in season["class"]):
+                        priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")][season.find_all("td")[0].text]["OREB%"] = season.find_all("td")[7].text
+    if (len(playerUrls) != 0):
+        with open("./csv_data/" + league + "/player_priors.pkl", "wb") as f:
+            pickle.dump(priorDict, f)
+
+    browser.close()

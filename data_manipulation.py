@@ -945,9 +945,9 @@ def aggregateModelPredictions(league):
     train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
     train = train[train["Home Score"].notna()]
     aggLeagues = ["France","Italy","Germany"]
-    greedyTestLeagues = ["France","Italy","Spain","Germany"]
-    if (league in greedyTestLeagues):
-        greedyTestLeagues.remove(league)
+    # greedyTestLeagues = ["France","Italy","Spain","Germany"]
+    # if (league in greedyTestLeagues):
+    #     greedyTestLeagues.remove(league)
     for l in aggLeagues:
         new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
         new = new[new["Home Score"].notna()]
