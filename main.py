@@ -11,7 +11,7 @@ import datetime
 import smtplib, ssl
 
 
-#leagues = ["Italy2"]
+#leagues = ["Italy"]
 leagues = ["Spain","France","Germany","Italy","Euroleague","France2","Italy2","VTB"]
 for league in leagues:
     print (league + "---------------------------------------------------------------------------")
@@ -31,7 +31,8 @@ for league in leagues:
     #pe.kellySpreadBets(20000, 1, "Open", league, uf = 0)
     #pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
     #pe.betWithLines(20000, league)
-    pe.analyzeMyLines(league, "Spread")
+    #pe.analyzeMyLines(league, "Spread")
+    pe.analyzeMyLines(league, "Total")
     #pe.agreeAnalysis(league, "Spread")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 

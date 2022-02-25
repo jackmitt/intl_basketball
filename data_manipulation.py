@@ -958,11 +958,17 @@ def aggregateModelPredictions(league):
     #     train = train.append(new, ignore_index = True)
     test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
     xCols = []
-    for col in train.columns:
-        if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
-            xCols.append(col)
-            train = train[train[col].notna()]
-    #print (xCols)
+    if (league != "Italy"):
+        for col in train.columns:
+            if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
+                xCols.append(col)
+                train = train[train[col].notna()]
+    else:
+        for col in train.columns:
+            if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "P_" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
+                xCols.append(col)
+                train = train[train[col].notna()]
+    print (xCols)
     y_train = train["Actual Spread"]
     y_test = test["Actual Spread"]
     test_OpenSpreads = test["Open Spread"]
@@ -1015,6 +1021,11 @@ def aggregateModelPredictions(league):
 
     predictions = []
     train_pred = []
+    xCols = []
+    for col in train.columns:
+        if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
     y_train = train["Actual Total"]
     y_test = test["Actual Total"]
     test_OpenTotals = test["Open Total"]

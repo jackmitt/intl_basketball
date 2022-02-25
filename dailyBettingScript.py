@@ -664,10 +664,16 @@ def bet(league, pinnacleLines):
         new = new[new["Home Score"].notna()]
         train = train.append(new, ignore_index = True)
     xCols = []
-    for col in train.columns:
-        if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
-            xCols.append(col)
-            train = train[train[col].notna()]
+    if (league != "Italy"):
+        for col in train.columns:
+            if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
+                xCols.append(col)
+                train = train[train[col].notna()]
+    else:
+        for col in train.columns:
+            if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "P_" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
+                xCols.append(col)
+                train = train[train[col].notna()]
     y_train = train["Actual Spread"]
     scaler = StandardScaler()
     X_train = pd.DataFrame(train, columns = xCols)
@@ -682,6 +688,11 @@ def bet(league, pinnacleLines):
 
     predictions = []
     train_pred = []
+    xCols = []
+    for col in train.columns:
+        if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
     y_train = train["Actual Total"]
     scaler = StandardScaler()
     X_train = pd.DataFrame(train, columns = xCols)
@@ -698,8 +709,8 @@ def bet(league, pinnacleLines):
     bet = []
     amount = []
     kellyDiv = 1
-    lowConfLeagues = ["Spain","France","Italy","Germany","VTB","Euroleague","France2"]
-    highConfLeagues = ["Italy2"]
+    lowConfLeagues = ["Spain","France","Germany","VTB","Euroleague","France2"]
+    highConfLeagues = ["Italy2","Italy"]
     if (league in lowConfLeagues):
         if (league == "Euroleague"):
             p = 0.53
@@ -708,24 +719,44 @@ def bet(league, pinnacleLines):
     else:
         p = 0.55
     for index, row in test.iterrows():
-        if (abs(row["Predicted Spread"] - float(row["Spread"])) < 3.5 or abs(row["Predicted Spread"] - float(row["Spread"])) > 7.5):
-            bet.append(np.nan)
-            amount.append(np.nan)
-            continue
-        elif (row["Predicted Spread"] < float(row["Spread"])):
-            if (bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv) < 0):
+        if (league != "Italy"):
+            if (abs(row["Predicted Spread"] - float(row["Spread"])) < 3.5 or abs(row["Predicted Spread"] - float(row["Spread"])) > 7.5):
                 bet.append(np.nan)
                 amount.append(np.nan)
                 continue
-            bet.append(row["Spread"])
-            amount.append(bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv))
+            elif (row["Predicted Spread"] < float(row["Spread"])):
+                if (bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv) < 0):
+                    bet.append(np.nan)
+                    amount.append(np.nan)
+                    continue
+                bet.append(row["Spread"])
+                amount.append(bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv))
+            else:
+                if (bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv) < 0):
+                    bet.append(np.nan)
+                    amount.append(np.nan)
+                    continue
+                bet.append(0-float(row["Spread"]))
+                amount.append(bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv))
         else:
-            if (bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv) < 0):
+            if (abs(row["Predicted Spread"] - float(row["Spread"])) < 5):
                 bet.append(np.nan)
                 amount.append(np.nan)
                 continue
-            bet.append(0-float(row["Spread"]))
-            amount.append(bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv))
+            elif (row["Predicted Spread"] < float(row["Spread"])):
+                if (bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv) < 0):
+                    bet.append(np.nan)
+                    amount.append(np.nan)
+                    continue
+                bet.append(row["Spread"])
+                amount.append(bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv))
+            else:
+                if (bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv) < 0):
+                    bet.append(np.nan)
+                    amount.append(np.nan)
+                    continue
+                bet.append(0-float(row["Spread"]))
+                amount.append(bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv))
     test["Spread Bet"] = bet
     test["Spread Amount"] = amount
 
