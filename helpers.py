@@ -604,7 +604,7 @@ def standardizeTeamName(name, league):
         if ("biella" in name):
             return ("BEI")
         elif (" torino" in name):
-            return ("TOR")
+            return ("CAGL")
         elif (" casale" in name):
             return ("NCM")
         elif (" trieste 2004" in name):
@@ -636,7 +636,7 @@ def standardizeTeamName(name, league):
         elif ("recanati" in name):
             return ("REC")
         elif ("chieti" in name):
-            return ("CHI")
+            return ("PROG")
         elif ("agropoli" in name):
             return ("AGRO")
         elif (" matera" in name):
