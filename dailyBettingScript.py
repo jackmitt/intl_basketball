@@ -791,9 +791,9 @@ def bet(league, pinnacleLines):
     test["O/U Bet"] = bet
     test["O/U Amount"] = amount
 
-    curBets = pd.read_csv("./csv_data/bets2.0.csv", encoding = "ISO-8859-1")
+    curBets = pd.read_csv("./csv_data/botbets2.0.csv", encoding = "ISO-8859-1")
     curBets = curBets.append(test)
-    curBets.to_csv("./csv_data/bets2.0.csv", index = False)
+    curBets.to_csv("./csv_data/botbets2.0.csv", index = False)
 
     port = 587  # For starttls
     smtp_server = "smtp.gmail.com"
@@ -828,9 +828,9 @@ def bet(league, pinnacleLines):
             server.sendmail(sender_email, receiver_email, message)
 
 
-league = "Italy2"
+#league = "Italy2"
 # stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
 # last = stats.at[len(stats.index) - 1, "Date"]
 # updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
 #updateSeasonStats(league, datetime.date(2021, 9, 1))
-bet(league, scrapePinnacle(league))
+#bet(league, scrapePinnacle(league))

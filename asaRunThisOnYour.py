@@ -25,8 +25,17 @@ while(1):
         if (statsGood):
             try:
                 lines = dbs.scrapePinnacle(league)
+                curBets = pd.read_csv("./csv_data/botbets2.0.csv", encoding = "ISO-8859-1")
                 if (not lines.empty):
-                    dbs.bet(league, lines)
+                    droprows = []
+                    for index, row in lines.iterrows():
+                        for i, r in curBets.iterrows():
+                            if (row["Home"] == r["Home"] and row["Away"] == r["Away"] and abs(datetime.date(int(row["Date"].split("-")[0]), int(row["Date"].split("-")[1]), int(row["Date"].split("-")[2])) - datetime.date(int(r["Date"].split("-")[0]), int(r["Date"].split("-")[1]), int(r["Date"].split("-")[2]))).days <= 2):
+                                droprows.append(index)
+                                break
+                    lines = lines.drop(droprows)
+                    if (not lines.empty):
+                        dbs.bet(league, lines)
             except:
                 print("Failed to scrape pinnacle / bet for " + league);
             finally:
