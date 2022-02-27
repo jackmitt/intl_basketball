@@ -37,7 +37,7 @@ for league in leagues:
     with open("./PieUpdates/" + league + ".txt", 'r') as file:
         date_time = datetime.datetime.strptime(file.read(), "%d-%b-%Y (%H:%M:%S)")
     statsGood = True
-    if (abs((date_time - datetime.datetime.now()).total_seconds()) > 12 * 60 * 60):
+    if (abs((date_time - datetime.datetime.now()).total_seconds()) > 7 * 60 * 60):
         statsGood = False
         try:
             stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
