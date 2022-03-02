@@ -70,7 +70,20 @@ def analyzeMyLines(league, betType):
     for i in cats:
         for j in tests:
             dict[i + " " + j] = []
+    dict["Home dog opposite favorite"] = []
+    dict["Away dog opposite favorite"] = []
     for index, row in pred.iterrows():
+        if (abs(row["Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row["Predicted " + betType] - row["Open " + betType]) > 7.5):
+            if (row["Predicted " + betType] < 0 and row["Open " + betType] > 0):
+                if (row["Actual " + betType] < row["Open " + betType]):
+                    dict["Home dog opposite favorite"].append(1)
+                else:
+                    dict["Home dog opposite favorite"].append(0)
+            if (row["Predicted " + betType] > 0 and row["Open " + betType] < 0):
+                if (row["Actual " + betType] > row["Open " + betType]):
+                    dict["Away dog opposite favorite"].append(1)
+                else:
+                    dict["Away dog opposite favorite"].append(0)
         if (row["H_GP"] <= 10 and row["Predicted " + betType] - row["Open " + betType] > 5):
             if (row["Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
@@ -457,6 +470,8 @@ def analyzeMyLines(league, betType):
     print ("Away vs Open:", np.average(dict["Away Open"]), len(dict["Away Open"]))
     print ("Away vs Close:", np.average(dict["Away Close"]), len(dict["Away Close"]))
     print ("Away CLV:", np.average(dict["Away CLV"]), len(dict["Away CLV"]))
+    print ("Home Dog Opposite Favorite:", np.average(dict["Home dog opposite favorite"]), len(dict["Home dog opposite favorite"]))
+    print ("Away Dog Opposite Favorite:", np.average(dict["Away dog opposite favorite"]), len(dict["Away dog opposite favorite"]))
     # print ("On Large Home Fav Open:", np.average(dict["On Large Home Fav Open"]), len(dict["On Large Home Fav Open"]))
     # print ("On Large Home Fav Close:", np.average(dict["On Large Home Fav Close"]), len(dict["On Large Home Fav Close"]))
     # print ("On Large Home Fav CLV:", np.average(dict["On Large Home Fav CLV"]), len(dict["On Large Home Fav CLV"]))

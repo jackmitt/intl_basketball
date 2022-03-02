@@ -32,7 +32,7 @@ for league in leagues:
     #pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
     #pe.betWithLines(20000, league)
     #pe.analyzeMyLines(league, "Spread")
-    pe.analyzeMyLines(league, "Total")
+    pe.analyzeMyLines(league, "Spread")
     #pe.agreeAnalysis(league, "Spread")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 
