@@ -941,34 +941,19 @@ def predictions(league):
 
 def aggregateModelPredictions(league):
     predictions = []
-    train_pred = []
     train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
     train = train[train["Home Score"].notna()]
     aggLeagues = ["France","Italy","Germany"]
-    # greedyTestLeagues = ["France","Italy","Spain","Germany"]
-    # if (league in greedyTestLeagues):
-    #     greedyTestLeagues.remove(league)
     for l in aggLeagues:
         new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
         new = new[new["Home Score"].notna()]
         train = train.append(new, ignore_index = True)
-    # for l in greedyTestLeagues:
-    #     new = pd.read_csv("./csv_data/" + l + "/test.csv", encoding = "ISO-8859-1")
-    #     new = new[new["Home Score"].notna()]
-    #     train = train.append(new, ignore_index = True)
     test = pd.read_csv("./csv_data/" + league + "/test.csv", encoding = "ISO-8859-1").dropna().reset_index(drop=True)
     xCols = []
-    if (league != "Italy"):
-        for col in train.columns:
-            if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
-                xCols.append(col)
-                train = train[train[col].notna()]
-    else:
-        for col in train.columns:
-            if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "P_" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
-                xCols.append(col)
-                train = train[train[col].notna()]
-    print (xCols)
+    for col in train.columns:
+        if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
     y_train = train["Actual Spread"]
     y_test = test["Actual Spread"]
     test_OpenSpreads = test["Open Spread"]
@@ -982,46 +967,45 @@ def aggregateModelPredictions(league):
     model.fit(X = X_train, y = y_train)
     for p in model.predict(X_test):
         predictions.append(p)
-    test["Predicted Spread"] = predictions
-    for p in model.predict(X_train):
-        train_pred.append(p)
-    ones = []
-    for i in range(len(X_train.index)):
-        ones.append(1)
-    X_train["Intercept"] = ones
-    ones = []
-    for i in range(len(X_test.index)):
-        ones.append(1)
-    X_test["Intercept"] = ones
-    tAwayOpen = []
-    tAwayClose = []
-    openCoverProb = []
-    closeCoverProb = []
-    spredd = []
-    for i in range(len(predictions)):
-        sPred = math.sqrt(mean_squared_error(y_train, train_pred) + np.matmul(np.matmul(X_test.to_numpy()[i],mean_squared_error(y_train, train_pred)*inv(np.matmul(np.transpose(X_train.to_numpy()),X_train.to_numpy()))), np.transpose(X_test.to_numpy()[i])))
-        if (predictions[i] < test_OpenSpreads[i]):
-            tAwayOpen.append(abs(predictions[i] - test_OpenSpreads[i])/sPred)
-            openCoverProb.append(t.cdf(x=abs(predictions[i] - test_OpenSpreads[i])/sPred, df=len(y_train) - len(xCols)))
-        else:
-            tAwayOpen.append(0-abs(predictions[i] - test_OpenSpreads[i])/sPred)
-            openCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_OpenSpreads[i])/sPred, df=len(y_train) - len(xCols)))
-        if (predictions[i] < test_CloseSpreads[i]):
-            tAwayClose.append(abs(predictions[i] - test_CloseSpreads[i])/sPred)
-            closeCoverProb.append(t.cdf(x=abs(predictions[i] - test_CloseSpreads[i])/sPred, df=len(y_train) - len(xCols)))
-        else:
-            tAwayClose.append(0-abs(predictions[i] - test_CloseSpreads[i])/sPred)
-            closeCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_CloseSpreads[i])/sPred, df=len(y_train) - len(xCols)))
-        spredd.append(sPred)
-    test["T Away Open"] = tAwayOpen
-    test["T Away Close"] = tAwayClose
-    test["S Pred"] = spredd
-    test["Predict Home Open Cover"] = openCoverProb
-    test["Predict Home Close Cover"] = closeCoverProb
+    test["Player Model Predicted Spread"] = predictions
 
     predictions = []
-    train_pred = []
     xCols = []
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
+    aggLeagues = ["France","Italy","Germany"]
+    for l in aggLeagues:
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
+    for col in train.columns:
+        if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "P_" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
+    y_train = train["Actual Spread"]
+    y_test = test["Actual Spread"]
+    test_OpenSpreads = test["Open Spread"]
+    test_CloseSpreads = test["Close Spread"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Team Model Predicted Spread"] = predictions
+
+    predictions = []
+    xCols = []
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
+    aggLeagues = ["France","Italy","Germany"]
+    for l in aggLeagues:
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
     for col in train.columns:
         if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
             xCols.append(col)
@@ -1039,42 +1023,37 @@ def aggregateModelPredictions(league):
     model.fit(X = X_train, y = y_train)
     for p in model.predict(X_test):
         predictions.append(p)
-    test["Predicted Total"] = predictions
-    for p in model.predict(X_train):
-        train_pred.append(p)
-    ones = []
-    for i in range(len(X_train.index)):
-        ones.append(1)
-    X_train["Intercept"] = ones
-    ones = []
-    for i in range(len(X_test.index)):
-        ones.append(1)
-    X_test["Intercept"] = ones
-    tAwayOpen = []
-    tAwayClose = []
-    openCoverProb = []
-    closeCoverProb = []
-    spredd = []
-    for i in range(len(predictions)):
-        sPred = math.sqrt(mean_squared_error(y_train, train_pred) + np.matmul(np.matmul(X_test.to_numpy()[i],mean_squared_error(y_train, train_pred)*inv(np.matmul(np.transpose(X_train.to_numpy()),X_train.to_numpy()))), np.transpose(X_test.to_numpy()[i])))
-        if (predictions[i] < test_OpenTotals[i]):
-            tAwayOpen.append(abs(predictions[i] - test_OpenTotals[i])/sPred)
-            openCoverProb.append(t.cdf(x=abs(predictions[i] - test_OpenTotals[i])/sPred, df=len(y_train) - len(xCols)))
-        else:
-            tAwayOpen.append(0-abs(predictions[i] - test_OpenTotals[i])/sPred)
-            openCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_OpenTotals[i])/sPred, df=len(y_train) - len(xCols)))
-        if (predictions[i] < test_CloseTotals[i]):
-            tAwayClose.append(abs(predictions[i] - test_CloseTotals[i])/sPred)
-            closeCoverProb.append(t.cdf(x=abs(predictions[i] - test_CloseTotals[i])/sPred, df=len(y_train) - len(xCols)))
-        else:
-            tAwayClose.append(0-abs(predictions[i] - test_CloseTotals[i])/sPred)
-            closeCoverProb.append(t.cdf(x=0-abs(predictions[i] - test_CloseTotals[i])/sPred, df=len(y_train) - len(xCols)))
-        spredd.append(sPred)
-    test["T Away Open"] = tAwayOpen
-    test["T Away Close"] = tAwayClose
-    test["S Pred"] = spredd
-    test["Predict Open Over"] = openCoverProb
-    test["Predict Close Over"] = closeCoverProb
+    test["Player Model Predicted Total"] = predictions
+
+
+    predictions = []
+    xCols = []
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
+    aggLeagues = ["France","Italy","Germany"]
+    for l in aggLeagues:
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
+    for col in train.columns:
+        if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
+    y_train = train["Actual Total"]
+    y_test = test["Actual Total"]
+    test_OpenTotals = test["Open Total"]
+    test_CloseTotals = test["Close Total"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Team Model Predicted Total"] = predictions
+
 
     homeOpenCover = []
     homeCloseCover = []

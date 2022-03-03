@@ -12,7 +12,7 @@ import smtplib, ssl
 
 
 #leagues = ["Italy"]
-leagues = ["Spain","France","Germany","Italy","Euroleague","France2","Italy2","VTB"]
+leagues = ["Spain","France","Germany","Italy","Euroleague","Italy2","VTB"]
 for league in leagues:
     print (league + "---------------------------------------------------------------------------")
     #realgm(league, 1, 1, 1, leagueBased = True)
@@ -31,10 +31,11 @@ for league in leagues:
     #pe.kellySpreadBets(20000, 1, "Open", league, uf = 0)
     #pe.kellySpreadBets(20000, 1, "Close", league, uf = 0)
     #pe.betWithLines(20000, league)
-    #pe.analyzeMyLines(league, "Spread")
-    pe.analyzeMyLines(league, "Spread")
+    #pe.analyzeMyLines(league, "Total", "Team Model")
+    #pe.analyzeMyLines(league, "Total")
+    pe.flatBetStrat(league, "Total")
     #pe.lineConfidence(league, "Spread")
-    #pe.agreeAnalysis(league, "Spread")
+    #pe.agreeAnalysis(league, "Total")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 
 

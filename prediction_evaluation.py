@@ -62,7 +62,7 @@ def simulateKellyBets(bankroll, kellyDiv, lineType, league):
     pred.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
     print(netSum, totalBets, netSum / totalBets)
 
-def analyzeMyLines(league, betType):
+def analyzeMyLines(league, betType, modelType):
     pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
     cats = ["Small Edge","Mid Edge","Large Edge","Larger Edge","Early Over","Mid Over","End Over","Early Under","Mid Under","End Under","Home","Away","On Large Home Fav","Against Large Home Fav","On Small Home Fav","Against Small Home Fav","On Large Away Fav","Against Large Away Fav","On Small Away Fav","Against Small Away Fav"]
     tests = ["Open", "Close", "CLV"]
@@ -74,25 +74,25 @@ def analyzeMyLines(league, betType):
     dict["Away dog opposite favorite"] = []
     dict["Move into bet range"] = []
     for index, row in pred.iterrows():
-        if ((abs(row["Predicted " + betType] - row["Open " + betType]) < 3.5 or abs(row["Predicted " + betType] - row["Open " + betType]) > 7.5) and (abs(row["Predicted " + betType] - row["Close " + betType]) > 3.5 or abs(row["Predicted " + betType] - row["Close " + betType]) < 7.5)):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+        if ((abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) < 3.5 or abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) > 7.5) and (abs(row[modelType + " Predicted " + betType] - row["Close " + betType]) > 3.5 or abs(row[modelType + " Predicted " + betType] - row["Close " + betType]) < 7.5)):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Move into bet range"].append(1)
                 else:
                     dict["Move into bet range"].append(0)
-        if (abs(row["Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row["Predicted " + betType] - row["Open " + betType]) < 7.5):
-            if (row["Predicted " + betType] < 0 and row["Open " + betType] > 0):
+        if (abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) < 7.5):
+            if (row[modelType + " Predicted " + betType] < 0 and row["Open " + betType] > 0):
                 if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Home dog opposite favorite"].append(1)
                 else:
                     dict["Home dog opposite favorite"].append(0)
-            if (row["Predicted " + betType] > 0 and row["Open " + betType] < 0):
+            if (row[modelType + " Predicted " + betType] > 0 and row["Open " + betType] < 0):
                 if (row["Actual " + betType] > row["Open " + betType]):
                     dict["Away dog opposite favorite"].append(1)
                 else:
                     dict["Away dog opposite favorite"].append(0)
-        if (row["H_GP"] <= 10 and row["Predicted " + betType] - row["Open " + betType] > 5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        if (row["H_GP"] <= 10 and row[modelType + " Predicted " + betType] - row["Open " + betType] > 5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Early Over CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -106,8 +106,8 @@ def analyzeMyLines(league, betType):
                     dict["Early Over Open"].append(1)
                 else:
                     dict["Early Over Open"].append(0)
-        elif (row["H_GP"] <= 20 and row["Predicted " + betType] - row["Open " + betType] > 5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (row["H_GP"] <= 20 and row[modelType + " Predicted " + betType] - row["Open " + betType] > 5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Mid Over CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -121,8 +121,8 @@ def analyzeMyLines(league, betType):
                     dict["Mid Over Open"].append(1)
                 else:
                     dict["Mid Over Open"].append(0)
-        elif (row["Predicted " + betType] - row["Open " + betType] > 5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (row[modelType + " Predicted " + betType] - row["Open " + betType] > 5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["End Over CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -136,8 +136,8 @@ def analyzeMyLines(league, betType):
                     dict["End Over Open"].append(1)
                 else:
                     dict["End Over Open"].append(0)
-        if (row["H_GP"] <= 10 and row["Predicted " + betType] - row["Open " + betType] < -5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        if (row["H_GP"] <= 10 and row[modelType + " Predicted " + betType] - row["Open " + betType] < -5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Early Under CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -151,8 +151,8 @@ def analyzeMyLines(league, betType):
                     dict["Early Under Open"].append(1)
                 else:
                     dict["Early Under Open"].append(0)
-        elif (row["H_GP"] <= 20 and row["Predicted " + betType] - row["Open " + betType] < -5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (row["H_GP"] <= 20 and row[modelType + " Predicted " + betType] - row["Open " + betType] < -5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Mid Under CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -166,8 +166,8 @@ def analyzeMyLines(league, betType):
                     dict["Mid Under Open"].append(1)
                 else:
                     dict["Mid Under Open"].append(0)
-        elif (row["Predicted " + betType] - row["Open " + betType] < -5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (row[modelType + " Predicted " + betType] - row["Open " + betType] < -5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["End Under CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -182,8 +182,8 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["End Under Open"].append(0)
         #EDGES
-        if (abs(row["Predicted " + betType] - row["Open " + betType]) < 3.5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        if (abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) < 3.5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Small Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -201,8 +201,8 @@ def analyzeMyLines(league, betType):
                     dict["Small Edge Open"].append(1)
                 else:
                     dict["Small Edge Open"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Open " + betType]) < 5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) < 5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Mid Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -220,8 +220,8 @@ def analyzeMyLines(league, betType):
                     dict["Mid Edge Open"].append(1)
                 else:
                     dict["Mid Edge Open"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Open " + betType]) < 7.5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) < 7.5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Large Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -239,8 +239,8 @@ def analyzeMyLines(league, betType):
                     dict["Large Edge Open"].append(1)
                 else:
                     dict["Large Edge Open"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Open " + betType]) < 12.5):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) < 12.5):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Larger Edge CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -258,8 +258,8 @@ def analyzeMyLines(league, betType):
                     dict["Larger Edge Open"].append(1)
                 else:
                     dict["Larger Edge Open"].append(0)
-        if (abs(row["Predicted " + betType] - row["Close " + betType]) < 3.5):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+        if (abs(row[modelType + " Predicted " + betType] - row["Close " + betType]) < 3.5):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Small Edge Close"].append(1)
                 else:
@@ -269,8 +269,8 @@ def analyzeMyLines(league, betType):
                     dict["Small Edge Close"].append(1)
                 else:
                     dict["Small Edge Close"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Close " + betType]) < 5):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Close " + betType]) < 5):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Mid Edge Close"].append(1)
                 else:
@@ -280,8 +280,8 @@ def analyzeMyLines(league, betType):
                     dict["Mid Edge Close"].append(1)
                 else:
                     dict["Mid Edge Close"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Close " + betType]) < 7.5):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Close " + betType]) < 7.5):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Large Edge Close"].append(1)
                 else:
@@ -291,8 +291,8 @@ def analyzeMyLines(league, betType):
                     dict["Large Edge Close"].append(1)
                 else:
                     dict["Large Edge Close"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Close " + betType]) < 12.5):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Close " + betType]) < 12.5):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Larger Edge Close"].append(1)
                 else:
@@ -303,7 +303,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["Larger Edge Close"].append(0)
         #HOME, AWAY
-        if (row["Predicted " + betType] < row["Open " + betType] and abs(row["Predicted " + betType] - row["Open " + betType]) > 5):
+        if (row[modelType + " Predicted " + betType] < row["Open " + betType] and abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) > 5):
             if (row["Close " + betType] < row["Open " + betType]):
                 dict["Home CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
             else:
@@ -312,7 +312,7 @@ def analyzeMyLines(league, betType):
                 dict["Home Open"].append(1)
             else:
                 dict["Home Open"].append(0)
-        elif (abs(row["Predicted " + betType] - row["Open " + betType]) > 5):
+        elif (abs(row[modelType + " Predicted " + betType] - row["Open " + betType]) > 5):
             if (row["Close " + betType] > row["Open " + betType]):
                 dict["Away CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
             else:
@@ -321,7 +321,7 @@ def analyzeMyLines(league, betType):
                 dict["Away Open"].append(1)
             else:
                 dict["Away Open"].append(0)
-        if (row["Predicted " + betType] < row["Close " + betType]):
+        if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
             if (row["Actual " + betType] < row["Close " + betType]):
                 dict["Home Close"].append(1)
             else:
@@ -333,7 +333,7 @@ def analyzeMyLines(league, betType):
                 dict["Away Close"].append(0)
         #SIZE OF FAVORITE
         if (row["Open " + betType] <= -10):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["On Large Home Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -352,7 +352,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["Against Large Home Fav Open"].append(0)
         elif (row["Open " + betType] < 0):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["On Small Home Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -371,7 +371,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["Against Small Home Fav Open"].append(0)
         elif (row["Open " + betType] < 10):
-            if (row["Predicted " + betType] < row["Open " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Against Small Away Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -390,7 +390,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["On Small Away Fav Open"].append(0)
         else:
-            if (row["Predicted " + betType] < row["Open " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Open " + betType]):
                 if (row["Close " + betType] < row["Open " + betType]):
                     dict["Against Large Away Fav CLV"].append(abs(row["Close " + betType] - row["Open " + betType]))
                 else:
@@ -410,7 +410,7 @@ def analyzeMyLines(league, betType):
                     dict["On Large Away Fav Open"].append(0)
 
         if (row["Close " + betType] <= -10):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["On Large Home Fav Close"].append(1)
                 else:
@@ -421,7 +421,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["Against Large Home Fav Close"].append(0)
         elif (row["Close " + betType] < 0):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["On Small Home Fav Close"].append(1)
                 else:
@@ -432,7 +432,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["Against Small Home Fav Close"].append(0)
         elif (row["Close " + betType] < 10):
-            if (row["Predicted " + betType] < row["Close " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Against Small Away Fav Close"].append(1)
                 else:
@@ -443,7 +443,7 @@ def analyzeMyLines(league, betType):
                 else:
                     dict["On Small Away Fav Close"].append(0)
         else:
-            if (row["Predicted " + betType] < row["Close " + betType]):
+            if (row[modelType + " Predicted " + betType] < row["Close " + betType]):
                 if (row["Actual " + betType] < row["Close " + betType]):
                     dict["Against Large Away Fav Close"].append(1)
                 else:
@@ -686,74 +686,315 @@ def betWithLines(bankroll, league):
     print("Closing Lines Misc Info:", netSum, totalBets, netSum / totalBets)
 
 def agreeAnalysis(league, betType):
-    predPlayer = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
-    predTeam = pd.read_csv("./csv_data/" + league + "/backup/predictions.csv", encoding = "ISO-8859-1")
+    pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
     player = []
     team = []
     agree = []
     indToVisit = []
-    for i in range(len(predTeam.index)):
-        indToVisit.append(i)
-    for index, row in predPlayer.iterrows():
-        for i in indToVisit:
-            if (row["Home"] == predTeam.at[i, "Home"] and row["Away"] == predTeam.at[i, "Away"] and row["Date"] == predTeam.at[i, "Date"]):
-                indToVisit.remove(i)
-                if (abs(row["Predicted " + betType] - row["Open " + betType]) > 5 and abs(predTeam.at[i, "Predicted " + betType] - row["Open " + betType]) > 5):
-                    if (row["Predicted " + betType] < row["Open " + betType] and predTeam.at[i, "Predicted " + betType] < row["Open " + betType]):
-                        if (row["Actual " + betType] < row["Open " + betType]):
-                            agree.append(1)
-                            player.append(1)
-                            team.append(1)
-                        elif (row["Actual " + betType] >row["Open " + betType]):
-                            agree.append(0)
-                            player.append(0)
-                            team.append(0)
-                    elif (row["Predicted " + betType] > row["Open " + betType] and predTeam.at[i, "Predicted " + betType] > row["Open " + betType]):
-                        if (row["Actual " + betType] >row["Open " + betType]):
-                            agree.append(1)
-                            player.append(1)
-                            team.append(1)
-                        elif (row["Actual " + betType] < row["Open " + betType]):
-                            agree.append(0)
-                            player.append(0)
-                            team.append(0)
-                    elif (row["Predicted " + betType] > row["Open " + betType] and predTeam.at[i, "Predicted " + betType] < row["Open " + betType]):
-                        if (row["Actual " + betType] > row["Open " + betType]):
-                            player.append(1)
-                            team.append(0)
-                        elif (row["Actual " + betType] < row["Open " + betType]):
-                            player.append(0)
-                            team.append(1)
-                    elif (row["Predicted " + betType] < row["Open " + betType] and predTeam.at[i, "Predicted " + betType] > row["Open " + betType]):
-                        if (row["Actual " + betType] > row["Open " + betType]):
-                            player.append(0)
-                            team.append(1)
-                        elif (row["Actual " + betType] < row["Open " + betType]):
-                            player.append(1)
-                            team.append(0)
-                elif (abs(row["Predicted " + betType] - row["Open " + betType]) > 5):
-                    if (row["Predicted " + betType] < row["Open " + betType]):
-                        if (row["Actual " + betType] < row["Open " + betType]):
-                            player.append(1)
-                        elif (row["Actual " + betType] >row["Open " + betType]):
-                            player.append(0)
-                    else:
-                        if (row["Actual " + betType] < row["Open " + betType]):
-                            player.append(0)
-                        elif (row["Actual " + betType] >row["Open " + betType]):
-                            player.append(1)
-                elif (abs(predTeam.at[i, "Predicted " + betType] - row["Open " + betType]) > 5):
-                    if (predTeam.at[i, "Predicted " + betType] < row["Open " + betType]):
-                        if (row["Actual " + betType] < row["Open " + betType]):
-                            team.append(1)
-                        elif (row["Actual " + betType] >row["Open " + betType]):
-                            team.append(0)
-                    else:
-                        if (row["Actual " + betType] < row["Open " + betType]):
-                            team.append(0)
-                        elif (row["Actual " + betType] >row["Open " + betType]):
-                            team.append(1)
-                break
+    for index, row in pred.iterrows():
+        if (betType == "Spread"):
+            if (abs(row["Player Model Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row["Player Model Predicted " + betType] - row["Open " + betType]) < 7.5 and abs(row["Team Model Predicted " + betType] - row["Open " + betType]) > 5 and abs(row["Team Model Predicted " + betType] - row["Open " + betType]) < 12.5):
+                if (row["Player Model Predicted " + betType] < row["Open " + betType] and row["Team Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        agree.append(1)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        agree.append(0)
+                elif (row["Player Model Predicted " + betType] > row["Open " + betType] and row["Team Model Predicted " + betType] > row["Open " + betType]):
+                    if (row["Actual " + betType] >row["Open " + betType]):
+                        agree.append(1)
+                    elif (row["Actual " + betType] < row["Open " + betType]):
+                        agree.append(0)
+                elif (row["Player Model Predicted " + betType] > row["Open " + betType] and row["Team Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] > row["Open " + betType]):
+                        player.append(1)
+                        team.append(0)
+                    elif (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(0)
+                        team.append(1)
+                elif (row["Player Model Predicted " + betType] < row["Open " + betType] and row["Team Model Predicted " + betType] > row["Open " + betType]):
+                    if (row["Actual " + betType] > row["Open " + betType]):
+                        player.append(0)
+                        team.append(1)
+                    elif (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(1)
+                        team.append(0)
+            elif (abs(row["Player Model Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row["Player Model Predicted " + betType] - row["Open " + betType]) < 7.5):
+                if (row["Player Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(1)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        player.append(0)
+                else:
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(0)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        player.append(1)
+            elif (abs(row["Team Model Predicted " + betType] - row["Open " + betType]) > 5 and abs(row["Team Model Predicted " + betType] - row["Open " + betType]) < 12.5):
+                if (row["Team Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        team.append(1)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        team.append(0)
+                else:
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        team.append(0)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        team.append(1)
+        if (betType == "Total"):
+            if (abs(row["Player Model Predicted " + betType] - row["Open " + betType]) > 5 and abs(row["Player Model Predicted " + betType] - row["Open " + betType]) < 12.5 and abs(row["Team Model Predicted " + betType] - row["Open " + betType]) > 5 and abs(row["Team Model Predicted " + betType] - row["Open " + betType]) < 12.5):
+                if (row["Player Model Predicted " + betType] < row["Open " + betType] and row["Team Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        agree.append(1)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        agree.append(0)
+                elif (row["Player Model Predicted " + betType] > row["Open " + betType] and row["Team Model Predicted " + betType] > row["Open " + betType]):
+                    if (row["Actual " + betType] >row["Open " + betType]):
+                        agree.append(1)
+                    elif (row["Actual " + betType] < row["Open " + betType]):
+                        agree.append(0)
+                elif (row["Player Model Predicted " + betType] > row["Open " + betType] and row["Team Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] > row["Open " + betType]):
+                        player.append(1)
+                        team.append(0)
+                    elif (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(0)
+                        team.append(1)
+                elif (row["Player Model Predicted " + betType] < row["Open " + betType] and row["Team Model Predicted " + betType] > row["Open " + betType]):
+                    if (row["Actual " + betType] > row["Open " + betType]):
+                        player.append(0)
+                        team.append(1)
+                    elif (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(1)
+                        team.append(0)
+            elif (abs(row["Player Model Predicted " + betType] - row["Open " + betType]) > 5 and abs(row["Player Model Predicted " + betType] - row["Open " + betType]) < 12.5):
+                if (row["Player Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(1)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        player.append(0)
+                else:
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        player.append(0)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        player.append(1)
+            elif (abs(row["Team Model Predicted " + betType] - row["Open " + betType]) > 5 and abs(row["Team Model Predicted " + betType] - row["Open " + betType]) < 12.5):
+                if (row["Team Model Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        team.append(1)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        team.append(0)
+                else:
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        team.append(0)
+                    elif (row["Actual " + betType] >row["Open " + betType]):
+                        team.append(1)
     print ("TEAM MODEL:", np.average(team), len(team))
     print ("PLAYER MODEL:", np.average(player), len(player))
     print ("AGREE MODEL:", np.average(agree), len(agree))
+
+def flatBetStrat(league, betType):
+    pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
+    kellyDiv = 1
+    bankroll = 20000
+    for index, row in pred.iterrows():
+        if (betType == "Spread"):
+            if (league == "Spain" or league == "France" or league == "Euroleague" or league == "VTB"):
+                if (league == "Euroleague"):
+                    playerwager = 0.00
+                else:
+                    playerwager = 0.03
+                if (league == "VTB"):
+                    teamwager = 0.03
+                else:
+                    teamwager = 0.00
+                if (abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) < 7.5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) < 12.5):
+                    if (row["Player Model Predicted Spread"] < float(row["Open Spread"]) and row["Team Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * 0.05 * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * 0.05
+                    elif (row["Player Model Predicted Spread"] > float(row["Open Spread"]) and row["Team Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * 0.05 * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * 0.05
+                elif (abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) < 7.5):
+                    if (row["Player Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * playerwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                    elif (row["Player Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * playerwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                elif(abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) < 12.5):
+                    if (row["Team Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+                    elif (row["Team Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+            elif (league == "Italy2"):
+                playerwager = 0.03
+                teamwager = 0.03
+                if (abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) < 7.5):
+                    if (row["Player Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * playerwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                    elif (row["Player Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * playerwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                elif(abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) < 12.5):
+                    if (row["Team Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+                    elif (row["Team Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+            elif (league == "Germany"):
+                playerwager = 0.04
+                teamwager = 0.04
+                if (abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) < 7.5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) < 12.5):
+                    continue
+                elif (abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Open Spread"])) < 7.5):
+                    if (row["Player Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * playerwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                    elif (row["Player Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * playerwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                elif(abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) < 12.5):
+                    if (row["Team Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+                    elif (row["Team Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+            elif (league == "Italy"):
+                teamwager = 0.05
+                if(abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Open Spread"])) < 12.5):
+                    if (row["Team Model Predicted Spread"] < float(row["Open Spread"])):
+                        if (row["Actual Spread"] < row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Home Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+                    elif (row["Team Model Predicted Spread"] > float(row["Open Spread"])):
+                        if (row["Actual Spread"] > row["Open Spread"]):
+                            bankroll += bankroll * teamwager * (float(row["Away Open Spread Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+        if (betType == "Total"):
+            if (league != "Italy2"):
+                if (league == "Spain" or league == "Italy"):
+                    agreewager = 0.05
+                    playerwager = 0.03
+                    teamwager = 0.00
+                elif (league == "France"):
+                    playerwager = 0.035
+                    agreewager = 0.06
+                    teamwager = 0.00
+                elif (league == "Germany"):
+                    agreewager = 0.02
+                    playerwager = 0.04
+                    teamwager = 0.00
+                elif (league == "Euroleague"):
+                    agreewager = 0.00
+                    playerwager = 0.00
+                    teamwager = 0.03
+                elif (league == "VTB"):
+                    agreewager = 0.00
+                    playerwager = 0.00
+                    teamwager = 0.00
+                if (abs(row["Player Model Predicted Total"] - float(row["Open Total"])) > 5 and abs(row["Player Model Predicted Total"] - float(row["Open Total"])) < 12.5 and abs(row["Team Model Predicted Total"] - float(row["Open Total"])) > 5 and abs(row["Team Model Predicted Total"] - float(row["Open Total"])) < 12.5):
+                    if (row["Player Model Predicted Total"] > float(row["Open Total"]) and row["Team Model Predicted Total"] > float(row["Open Total"])):
+                        if (row["Actual Total"] > row["Open Total"]):
+                            bankroll += bankroll * agreewager * (float(row["Home Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * agreewager
+                    elif (row["Player Model Predicted Total"] < float(row["Open Total"]) and row["Team Model Predicted Total"] < float(row["Open Total"])):
+                        if (row["Actual Total"] < row["Open Total"]):
+                            bankroll += bankroll * agreewager * (float(row["Away Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * agreewager
+                elif (abs(row["Player Model Predicted Total"] - float(row["Open Total"])) > 5 and abs(row["Player Model Predicted Total"] - float(row["Open Total"])) < 12.5):
+                    if (row["Player Model Predicted Total"] > float(row["Open Total"])):
+                        if (row["Actual Total"] > row["Open Total"]):
+                            bankroll += bankroll * playerwager * (float(row["Home Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                    else:
+                        if (row["Actual Total"] < row["Open Total"]):
+                            bankroll += bankroll * playerwager * (float(row["Away Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                elif (abs(row["Team Model Predicted Total"] - float(row["Open Total"])) > 5 and abs(row["Team Model Predicted Total"] - float(row["Open Total"])) < 12.5):
+                    if (row["Team Model Predicted Total"] > float(row["Open Total"])):
+                        if (row["Actual Total"] > row["Open Total"]):
+                            bankroll += bankroll * teamwager * (float(row["Home Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+                    else:
+                        if (row["Actual Total"] < row["Open Total"]):
+                            bankroll += bankroll * teamwager * (float(row["Away Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+            else:
+                agreewager = 0.05
+                playerwager = 0.035
+                teamwager = 0.035
+                if (abs(row["Player Model Predicted Total"] - float(row["Open Total"])) > 3.5 and abs(row["Player Model Predicted Total"] - float(row["Open Total"])) < 12.5 and abs(row["Team Model Predicted Total"] - float(row["Open Total"])) > 3.5 and abs(row["Team Model Predicted Total"] - float(row["Open Total"])) < 12.5):
+                    if (row["Player Model Predicted Total"] > float(row["Open Total"]) and row["Team Model Predicted Total"] > float(row["Open Total"])):
+                        if (row["Actual Total"] > row["Open Total"]):
+                            bankroll += bankroll * agreewager * (float(row["Home Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * agreewager
+                    elif (row["Player Model Predicted Total"] < float(row["Open Total"]) and row["Team Model Predicted Total"] < float(row["Open Total"])):
+                        if (row["Actual Total"] < row["Open Total"]):
+                            bankroll += bankroll * agreewager * (float(row["Away Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * agreewager
+                elif (abs(row["Player Model Predicted Total"] - float(row["Open Total"])) > 3.5 and abs(row["Player Model Predicted Total"] - float(row["Open Total"])) < 12.5):
+                    if (row["Player Model Predicted Total"] > float(row["Open Total"])):
+                        if (row["Actual Total"] > row["Open Total"]):
+                            bankroll += bankroll * playerwager * (float(row["Home Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                    else:
+                        if (row["Actual Total"] < row["Open Total"]):
+                            bankroll += bankroll * playerwager * (float(row["Away Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * playerwager
+                elif (abs(row["Team Model Predicted Total"] - float(row["Open Total"])) > 3.5 and abs(row["Team Model Predicted Total"] - float(row["Open Total"])) < 12.5):
+                    if (row["Team Model Predicted Total"] > float(row["Open Total"])):
+                        if (row["Actual Total"] > row["Open Total"]):
+                            bankroll += bankroll * teamwager * (float(row["Home Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+                    else:
+                        if (row["Actual Total"] < row["Open Total"]):
+                            bankroll += bankroll * teamwager * (float(row["Away Open Total Odds"]) - 1)
+                        else:
+                            bankroll -= bankroll * teamwager
+    print (bankroll)
