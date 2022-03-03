@@ -705,7 +705,7 @@ def bet(league, pinnacleLines):
         predictions.append(p)
     test["Predicted Total"] = predictions
 
-    bankroll = 18000
+    bankroll = 17000
     bet = []
     amount = []
     kellyDiv = 1

@@ -33,6 +33,7 @@ for league in leagues:
     #pe.betWithLines(20000, league)
     #pe.analyzeMyLines(league, "Spread")
     pe.analyzeMyLines(league, "Spread")
+    #pe.lineConfidence(league, "Spread")
     #pe.agreeAnalysis(league, "Spread")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 

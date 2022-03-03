@@ -72,8 +72,15 @@ def analyzeMyLines(league, betType):
             dict[i + " " + j] = []
     dict["Home dog opposite favorite"] = []
     dict["Away dog opposite favorite"] = []
+    dict["Move into bet range"] = []
     for index, row in pred.iterrows():
-        if (abs(row["Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row["Predicted " + betType] - row["Open " + betType]) > 7.5):
+        if ((abs(row["Predicted " + betType] - row["Open " + betType]) < 3.5 or abs(row["Predicted " + betType] - row["Open " + betType]) > 7.5) and (abs(row["Predicted " + betType] - row["Close " + betType]) > 3.5 or abs(row["Predicted " + betType] - row["Close " + betType]) < 7.5)):
+            if (row["Predicted " + betType] < row["Close " + betType]):
+                if (row["Actual " + betType] < row["Close " + betType]):
+                    dict["Move into bet range"].append(1)
+                else:
+                    dict["Move into bet range"].append(0)
+        if (abs(row["Predicted " + betType] - row["Open " + betType]) > 3.5 and abs(row["Predicted " + betType] - row["Open " + betType]) < 7.5):
             if (row["Predicted " + betType] < 0 and row["Open " + betType] > 0):
                 if (row["Actual " + betType] < row["Open " + betType]):
                     dict["Home dog opposite favorite"].append(1)
@@ -446,32 +453,33 @@ def analyzeMyLines(league, betType):
                     dict["On Large Away Fav Close"].append(1)
                 else:
                     dict["On Large Away Fav Close"].append(0)
-    print ("<2 points vs Open:", np.average(dict["Small Edge Open"]), "N:", len(dict["Small Edge Open"]))
-    print ("2-5 points vs Open:", np.average(dict["Mid Edge Open"]), "N:", len(dict["Mid Edge Open"]))
+    print ("<3.5 points vs Open:", np.average(dict["Small Edge Open"]), "N:", len(dict["Small Edge Open"]))
+    print ("3.5-5 points vs Open:", np.average(dict["Mid Edge Open"]), "N:", len(dict["Mid Edge Open"]))
     print ("5-7.5 points vs Open:", np.average(dict["Large Edge Open"]), "N:", len(dict["Large Edge Open"]))
     print ("7.5-12.5 points vs Open:", np.average(dict["Larger Edge Open"]), "N:", len(dict["Larger Edge Open"]))
     print ("<2 points vs Close:", np.average(dict["Small Edge Close"]), "N:", len(dict["Small Edge Close"]))
     print ("2-5 points vs Close:", np.average(dict["Mid Edge Close"]), "N:", len(dict["Mid Edge Close"]))
     print ("5-7.5 points vs Close:", np.average(dict["Large Edge Close"]), "N:", len(dict["Large Edge Close"]))
     print ("7.5-12.5 points vs Close:", np.average(dict["Larger Edge Close"]), "N:", len(dict["Larger Edge Close"]))
-    print ("<2 points CLV:", np.average(dict["Small Edge CLV"]), "N:", len(dict["Small Edge CLV"]))
-    print ("2-5 points CLV:", np.average(dict["Mid Edge CLV"]), "N:", len(dict["Mid Edge CLV"]))
-    print ("5-7.5 points CLV:", np.average(dict["Large Edge CLV"]), "N:", len(dict["Large Edge CLV"]))
-    print ("7.5-12.5 points CLV:", np.average(dict["Larger Edge CLV"]), "N:", len(dict["Larger Edge CLV"]))
-    print ("Early Season Over:", np.average(dict["Early Over Open"]), len(dict["Early Over Open"]))
-    print ("Mid Season Over:", np.average(dict["Mid Over Open"]), len(dict["Mid Over Open"]))
-    print ("End Season Over:", np.average(dict["End Over Open"]), len(dict["End Over Open"]))
-    print ("Early Season Under:", np.average(dict["Early Under Open"]), len(dict["Early Under Open"]))
-    print ("Mid Season Under:", np.average(dict["Mid Under Open"]), len(dict["Mid Under Open"]))
-    print ("End Season Under:", np.average(dict["End Under Open"]), len(dict["End Under Open"]))
-    print ("Home vs Open:", np.average(dict["Home Open"]), len(dict["Home Open"]))
-    print ("Home vs Close:", np.average(dict["Home Close"]), len(dict["Home Close"]))
-    print ("Home CLV:", np.average(dict["Home CLV"]), len(dict["Home CLV"]))
-    print ("Away vs Open:", np.average(dict["Away Open"]), len(dict["Away Open"]))
-    print ("Away vs Close:", np.average(dict["Away Close"]), len(dict["Away Close"]))
-    print ("Away CLV:", np.average(dict["Away CLV"]), len(dict["Away CLV"]))
+    # print ("<2 points CLV:", np.average(dict["Small Edge CLV"]), "N:", len(dict["Small Edge CLV"]))
+    # print ("2-5 points CLV:", np.average(dict["Mid Edge CLV"]), "N:", len(dict["Mid Edge CLV"]))
+    # print ("5-7.5 points CLV:", np.average(dict["Large Edge CLV"]), "N:", len(dict["Large Edge CLV"]))
+    # print ("7.5-12.5 points CLV:", np.average(dict["Larger Edge CLV"]), "N:", len(dict["Larger Edge CLV"]))
+    # print ("Early Season Over:", np.average(dict["Early Over Open"]), len(dict["Early Over Open"]))
+    # print ("Mid Season Over:", np.average(dict["Mid Over Open"]), len(dict["Mid Over Open"]))
+    # print ("End Season Over:", np.average(dict["End Over Open"]), len(dict["End Over Open"]))
+    # print ("Early Season Under:", np.average(dict["Early Under Open"]), len(dict["Early Under Open"]))
+    # print ("Mid Season Under:", np.average(dict["Mid Under Open"]), len(dict["Mid Under Open"]))
+    # print ("End Season Under:", np.average(dict["End Under Open"]), len(dict["End Under Open"]))
+    # print ("Home vs Open:", np.average(dict["Home Open"]), len(dict["Home Open"]))
+    # print ("Home vs Close:", np.average(dict["Home Close"]), len(dict["Home Close"]))
+    # print ("Home CLV:", np.average(dict["Home CLV"]), len(dict["Home CLV"]))
+    # print ("Away vs Open:", np.average(dict["Away Open"]), len(dict["Away Open"]))
+    # print ("Away vs Close:", np.average(dict["Away Close"]), len(dict["Away Close"]))
+    # print ("Away CLV:", np.average(dict["Away CLV"]), len(dict["Away CLV"]))
     print ("Home Dog Opposite Favorite:", np.average(dict["Home dog opposite favorite"]), len(dict["Home dog opposite favorite"]))
     print ("Away Dog Opposite Favorite:", np.average(dict["Away dog opposite favorite"]), len(dict["Away dog opposite favorite"]))
+    print ("Move into bet range:", np.average(dict["Move into bet range"]), len(dict["Move into bet range"]))
     # print ("On Large Home Fav Open:", np.average(dict["On Large Home Fav Open"]), len(dict["On Large Home Fav Open"]))
     # print ("On Large Home Fav Close:", np.average(dict["On Large Home Fav Close"]), len(dict["On Large Home Fav Close"]))
     # print ("On Large Home Fav CLV:", np.average(dict["On Large Home Fav CLV"]), len(dict["On Large Home Fav CLV"]))
@@ -496,6 +504,27 @@ def analyzeMyLines(league, betType):
     # print ("Against Large Away Fav Open:", np.average(dict["Against Large Away Fav Open"]), len(dict["Against Large Away Fav Open"]))
     # print ("Against Large Away Fav Close:", np.average(dict["Against Large Away Fav Close"]), len(dict["Against Large Away Fav Close"]))
     # print ("Against Large Away Fav CLV:", np.average(dict["Against Large Away Fav CLV"]), len(dict["Against Large Away Fav CLV"]))
+
+def lineConfidence(league, betType):
+    pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
+    dict = {}
+    for i in range(1, 30, 2):
+        dict[i/2] = []
+    for index, row in pred.iterrows():
+        for key in dict:
+            if (abs(row["Predicted " + betType] - row["Open " + betType]) < key and abs(row["Predicted " + betType] - row["Open " + betType]) > key - 1):
+                if (row["Predicted " + betType] < row["Open " + betType]):
+                    if (row["Actual " + betType] < row["Open " + betType]):
+                        dict[key].append(1)
+                    else:
+                        dict[key].append(0)
+                else:
+                    if (row["Actual " + betType] > row["Open " + betType]):
+                        dict[key].append(1)
+                    else:
+                        dict[key].append(0)
+    for key in dict:
+        print (key, np.average(dict[key]), len(dict[key]))
 
 def kellySpreadBets(bankroll, kellyDiv, lineType, league, uf = 0):
     pred = pd.read_csv("./csv_data/" + league + "/predictions.csv", encoding = "ISO-8859-1")
