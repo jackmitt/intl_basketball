@@ -95,8 +95,7 @@ def updateSeasonStats(league, last_date):
             for c in ["pg_","sg_","sf_","pf_","c_"]:
                 for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
                     A.addColumn(a + b + c + d)
-    #driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-    driver_path = "./chromedriver"
+    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
