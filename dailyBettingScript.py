@@ -664,16 +664,10 @@ def bet(league, pinnacleLines):
         new = new[new["Home Score"].notna()]
         train = train.append(new, ignore_index = True)
     xCols = []
-    if (league != "Italy"):
-        for col in train.columns:
-            if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
-                xCols.append(col)
-                train = train[train[col].notna()]
-    else:
-        for col in train.columns:
-            if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "P_" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
-                xCols.append(col)
-                train = train[train[col].notna()]
+    for col in train.columns:
+        if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
     y_train = train["Actual Spread"]
     scaler = StandardScaler()
     X_train = pd.DataFrame(train, columns = xCols)
@@ -684,10 +678,43 @@ def bet(league, pinnacleLines):
     model.fit(X = X_train, y = y_train)
     for p in model.predict(X_test):
         predictions.append(p)
-    test["Predicted Spread"] = predictions
+    test["Player Model Predicted Spread"] = predictions
 
     predictions = []
     train_pred = []
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
+    aggLeagues = ["France","Italy","Germany"]
+    for l in aggLeagues:
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
+    xCols = []
+    for col in train.columns:
+        if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "P_" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
+    y_train = train["Actual Spread"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Team Model Predicted Spread"] = predictions
+
+    predictions = []
+    train_pred = []
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
+    aggLeagues = ["France","Italy","Germany"]
+    for l in aggLeagues:
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
     xCols = []
     for col in train.columns:
         if (("gsf" in col or "pfc" in col) and "_GP" not in col and "Pace" not in col and "I_" not in col):
@@ -703,97 +730,247 @@ def bet(league, pinnacleLines):
     model.fit(X = X_train, y = y_train)
     for p in model.predict(X_test):
         predictions.append(p)
-    test["Predicted Total"] = predictions
+    test["Player Model Predicted Total"] = predictions
+
+    predictions = []
+    train_pred = []
+    train = pd.read_csv("./csv_data/Spain/train.csv", encoding = "ISO-8859-1")
+    train = train[train["Home Score"].notna()]
+    aggLeagues = ["France","Italy","Germany"]
+    for l in aggLeagues:
+        new = pd.read_csv("./csv_data/" + l + "/train.csv", encoding = "ISO-8859-1")
+        new = new[new["Home Score"].notna()]
+        train = train.append(new, ignore_index = True)
+    xCols = []
+    for col in train.columns:
+        if (("H_" in col or "A_" in col) and "gsf" not in col and "pfc" not in col and "_GP" not in col and "Pace" not in col and "I_" not in col):
+            xCols.append(col)
+            train = train[train[col].notna()]
+    y_train = train["Actual Total"]
+    scaler = StandardScaler()
+    X_train = pd.DataFrame(train, columns = xCols)
+    X_train[xCols] = scaler.fit_transform(X_train[xCols])
+    X_test = pd.DataFrame(test, columns = xCols)
+    X_test[xCols] = scaler.transform(X_test[xCols])
+    model = LinearRegression()
+    model.fit(X = X_train, y = y_train)
+    for p in model.predict(X_test):
+        predictions.append(p)
+    test["Team Model Predicted Total"] = predictions
 
     bankroll = 17000
     bet = []
     amount = []
-    kellyDiv = 1
-    lowConfLeagues = ["Spain","France","Germany","VTB","Euroleague","France2"]
-    highConfLeagues = ["Italy2","Italy"]
-    if (league in lowConfLeagues):
-        if (league == "Euroleague"):
-            p = 0.53
-        else:
-            p = 0.535
-    else:
-        p = 0.55
+    if (league == "Spain"):
+        agreewager = 0.05
+        playerwager = 0.03
+        teamwager = 0.00
+    elif (league == "France"):
+        agreewager = 0.05
+        playerwager = 0.03
+        teamwager = 0.00
+    elif (league == "Euroleague"):
+        agreewager = 0.05
+        playerwager = 0.00
+        teamwager = 0.00
+    elif (league == "VTB"):
+        agreewager = 0.05
+        playerwager = 0.03
+        teamwager = 0.03
+    elif (league == "Italy2"):
+        agreewager = 0.04
+        playerwager = 0.03
+        teamwager = 0.03
+    elif (league == "Germany"):
+        agreewager = 0.00
+        playerwager = 0.04
+        teamwager = 0.04
+    elif (league == "Italy"):
+        agreewager = 0.00
+        playerwager = 0.00
+        teamwager = 0.05
     for index, row in test.iterrows():
-        if (league != "Italy"):
-            if (abs(row["Predicted Spread"] - float(row["Spread"])) < 3.5 or abs(row["Predicted Spread"] - float(row["Spread"])) > 7.5):
-                bet.append(np.nan)
-                amount.append(np.nan)
-                continue
-            elif (row["Predicted Spread"] < float(row["Spread"])):
-                if (bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv) < 0):
+        if ((abs(row["Player Model Predicted Spread"] - float(row["Spread"])) < 3.5 or abs(row["Player Model Predicted Spread"] - float(row["Spread"])) > 7.5) and (abs(row["Team Model Predicted Spread"] - float(row["Spread"])) < 5 or abs(row["Team Model Predicted Spread"] - float(row["Spread"])) > 12.5)):
+            bet.append(np.nan)
+            amount.append(np.nan)
+            continue
+        if (abs(row["Player Model Predicted Spread"] - float(row["Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Spread"])) < 7.5 and abs(row["Team Model Predicted Spread"] - float(row["Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Spread"])) < 12.5):
+            if (row["Player Model Predicted Spread"] < float(row["Spread"]) and row["Team Model Predicted Spread"] < float(row["Spread"])):
+                if (agreewager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(row["Spread"])
-                amount.append(bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv))
-            else:
-                if (bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv) < 0):
+                amount.append(bankroll * agreewager)
+            elif (row["Player Model Predicted Spread"] > float(row["Spread"]) and row["Team Model Predicted Spread"] > float(row["Spread"])):
+                if (agreewager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(0-float(row["Spread"]))
-                amount.append(bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv))
-        else:
-            if (abs(row["Predicted Spread"] - float(row["Spread"])) < 5):
-                bet.append(np.nan)
-                amount.append(np.nan)
-                continue
-            elif (row["Predicted Spread"] < float(row["Spread"])):
-                if (bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv) < 0):
+                amount.append(bankroll * agreewager)
+        elif (abs(row["Player Model Predicted Spread"] - float(row["Spread"])) > 3.5 and abs(row["Player Model Predicted Spread"] - float(row["Spread"])) < 7.5):
+            if (row["Player Model Predicted Spread"] < float(row["Spread"])):
+                if (playerwager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(row["Spread"])
-                amount.append(bankroll * kellyStake(p, float(row["Home Spread Odds"]), kellyDiv))
-            else:
-                if (bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv) < 0):
+                amount.append(bankroll * playerwager)
+            elif (row["Player Model Predicted Spread"] > float(row["Spread"])):
+                if (playerwager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(0-float(row["Spread"]))
-                amount.append(bankroll * kellyStake(p, float(row["Away Spread Odds"]), kellyDiv))
+                amount.append(bankroll * playerwager)
+        elif(abs(row["Team Model Predicted Spread"] - float(row["Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Spread"])) < 12.5):
+            if (row["Team Model Predicted Spread"] < float(row["Spread"])):
+                if (teamwager == 0.00):
+                    bet.append(np.nan)
+                    amount.append(np.nan)
+                    continue
+                bet.append(row["Spread"])
+                amount.append(bankroll * teamwager)
+            elif (row["Team Model Predicted Spread"] > float(row["Spread"])):
+                if (teamwager == 0.00):
+                    bet.append(np.nan)
+                    amount.append(np.nan)
+                    continue
+                bet.append(0-float(row["Spread"]))
+                amount.append(bankroll * teamwager)
     test["Spread Bet"] = bet
     test["Spread Amount"] = amount
 
     bet = []
     amount = []
-    kellyDiv = 1
-    lowConfLeagues = ["France2","Germany2","VTB","Euroleague"]
-    highConfLeagues = ["Spain","France","Italy","Germany","Italy2"]
-    if (league in lowConfLeagues):
-        p = 0.53
+    if (league != "Italy2"):
+        if (league == "Spain" or league == "Italy"):
+            agreewager = 0.05
+            playerwager = 0.03
+            teamwager = 0.00
+        elif (league == "France"):
+            playerwager = 0.035
+            agreewager = 0.06
+            teamwager = 0.00
+        elif (league == "Germany"):
+            agreewager = 0.02
+            playerwager = 0.04
+            teamwager = 0.00
+        elif (league == "Euroleague"):
+            agreewager = 0.00
+            playerwager = 0.00
+            teamwager = 0.03
+        elif (league == "VTB"):
+            agreewager = 0.00
+            playerwager = 0.00
+            teamwager = 0.00
+        for index, row in test.iterrows():
+            if ((abs(row["Player Model Predicted Total"] - float(row["Total"])) < 5 or abs(row["Player Model Predicted Total"] - float(row["Total"])) > 12.5) and (abs(row["Team Model Predicted Total"] - float(row["Total"])) < 5 or abs(row["Team Model Predicted Total"] - float(row["Total"])) > 12.5)):
+                bet.append(np.nan)
+                amount.append(np.nan)
+                continue
+            if (abs(row["Player Model Predicted Total"] - float(row["Total"])) > 5 and abs(row["Player Model Predicted Total"] - float(row["Total"])) < 12.5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) > 5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) < 12.5):
+                if (row["Player Model Predicted Total"] > float(row["Total"]) and row["Team Model Predicted Total"] > float(row["Total"])):
+                    if (agreewager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Over")
+                    amount.append(bankroll * agreewager)
+                elif (row["Player Model Predicted Total"] < float(row["Total"]) and row["Team Model Predicted Total"] < float(row["Total"])):
+                    if (agreewager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Under")
+                    amount.append(bankroll * agreewager)
+            elif (abs(row["Player Model Predicted Total"] - float(row["Total"])) > 5 and abs(row["Player Model Predicted Total"] - float(row["Total"])) < 12.5):
+                if (row["Player Model Predicted Total"] > float(row["Total"])):
+                    if (playerwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Over")
+                    amount.append(bankroll * playerwager)
+                else:
+                    if (playerwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Under")
+                    amount.append(bankroll * playerwager)
+            elif (abs(row["Team Model Predicted Total"] - float(row["Total"])) > 5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) < 12.5):
+                if (row["Team Model Predicted Total"] > float(row["Total"])):
+                    if (teamwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Over")
+                    amount.append(bankroll * teamwager)
+                else:
+                    if (teamwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Under")
+                    amount.append(bankroll * teamwager)
     else:
-        p = 0.54
-    for index, row in test.iterrows():
-        if (abs(row["Predicted Total"] - float(row["Total"])) < 5):
-            bet.append(np.nan)
-            amount.append(np.nan)
-            continue
-        elif (row["Predicted Total"] > float(row["Total"])):
-            if (bankroll * kellyStake(p, float(row["Over Total Odds"]), kellyDiv) < 0):
-                bet.append(np.nan)
-                amount.append(np.nan)
-                continue
-            bet.append("Over")
-            amount.append(bankroll * kellyStake(p, float(row["Over Total Odds"]), kellyDiv))
-        else:
-            if (bankroll * kellyStake(p, float(row["Under Total Odds"]), kellyDiv) < 0):
-                bet.append(np.nan)
-                amount.append(np.nan)
-                continue
-            bet.append("Under")
-            amount.append(bankroll * kellyStake(p, float(row["Under Total Odds"]), kellyDiv))
+        agreewager = 0.05
+        playerwager = 0.035
+        teamwager = 0.035
+        for index, row in test.iterrows():
+            if (abs(row["Player Model Predicted Total"] - float(row["Total"])) > 3.5 and abs(row["Player Model Predicted Total"] - float(row["Total"])) < 12.5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) > 3.5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) < 12.5):
+                if (row["Player Model Predicted Total"] > float(row["Total"]) and row["Team Model Predicted Total"] > float(row["Total"])):
+                    if (agreewager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Over")
+                    amount.append(bankroll * agreewager)
+                elif (row["Player Model Predicted Total"] < float(row["Total"]) and row["Team Model Predicted Total"] < float(row["Total"])):
+                    if (agreewager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Under")
+                    amount.append(bankroll * agreewager)
+            elif (abs(row["Player Model Predicted Total"] - float(row["Total"])) > 3.5 and abs(row["Player Model Predicted Total"] - float(row["Total"])) < 12.5):
+                if (row["Player Model Predicted Total"] > float(row["Total"])):
+                    if (playerwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Over")
+                    amount.append(bankroll * playerwager)
+                else:
+                    if (playerwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Under")
+                    amount.append(bankroll * playerwager)
+            elif (abs(row["Team Model Predicted Total"] - float(row["Total"])) > 3.5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) < 12.5):
+                if (row["Team Model Predicted Total"] > float(row["Total"])):
+                    if (teamwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Over")
+                    amount.append(bankroll * teamwager)
+                else:
+                    if (teamwager == 0.00):
+                        bet.append(np.nan)
+                        amount.append(np.nan)
+                        continue
+                    bet.append("Under")
+                    amount.append(bankroll * teamwager)
     test["O/U Bet"] = bet
     test["O/U Amount"] = amount
 
-    curBets = pd.read_csv("./csv_data/botbets2.0.csv", encoding = "ISO-8859-1")
+    curBets = pd.read_csv("./csv_data/botbets3.0.csv", encoding = "ISO-8859-1")
     curBets = curBets.append(test)
-    curBets.to_csv("./csv_data/botbets2.0.csv", index = False)
+    curBets.to_csv("./csv_data/botbets3.0.csv", index = False)
 
     port = 587  # For starttls
     smtp_server = "smtp.gmail.com"
@@ -809,15 +986,15 @@ def bet(league, pinnacleLines):
         if (row["Spread Bet"] == row["Spread Bet"]):
             realBet = True
             if (row["Spread Bet"] == row["Spread"]):
-                message = message + row["Home"] + " " + str(row["Spread Bet"]) + " Vs. " + row["Away"] + " (" + str(row["Predicted Spread"]) + ")\nOdds: " + str(row["Home Spread Odds"]) + "\nAmount: " + str(row["Spread Amount"]) + "\n\n"
+                message = message + row["Home"] + " " + str(row["Spread Bet"]) + " Vs. " + row["Away"] + "\nOdds: " + str(row["Home Spread Odds"]) + "\nAmount: " + str(row["Spread Amount"]) + "\n\n"
             else:
-                message = message + row["Home"] + " Vs. " + row["Away"] + " " + str(row["Spread Bet"]) + " (" + str(row["Predicted Spread"]) + ")\nOdds: " + str(row["Away Spread Odds"]) + "\nAmount: " + str(row["Spread Amount"]) + "\n\n"
+                message = message + row["Home"] + " Vs. " + row["Away"] + " " + str(row["Spread Bet"]) + "\nOdds: " + str(row["Away Spread Odds"]) + "\nAmount: " + str(row["Spread Amount"]) + "\n\n"
         if (row["O/U Bet"] == row["O/U Bet"]):
             realBet = True
             if (row["O/U Bet"] == "Over"):
-                message = message + row["Home"] + " Vs. " + row["Away"] + "Over " + str(row["Total"]) + "(" + str(row["Predicted Total"]) + ")\nOdds: " + str(row["Over Total Odds"]) + "\nAmount: " + str(row["O/U Amount"]) + "\n\n"
+                message = message + row["Home"] + " Vs. " + row["Away"] + "Over " + str(row["Total"]) + "\nOdds: " + str(row["Over Total Odds"]) + "\nAmount: " + str(row["O/U Amount"]) + "\n\n"
             else:
-                message = message + row["Home"] + " Vs. " + row["Away"] + "Under " + str(row["Total"]) + "(" + str(row["Predicted Total"]) + ")\nOdds: " + str(row["Under Total Odds"]) + "\nAmount: " + str(row["O/U Amount"]) + "\n\n"
+                message = message + row["Home"] + " Vs. " + row["Away"] + "Under " + str(row["Total"]) + "\nOdds: " + str(row["Under Total Odds"]) + "\nAmount: " + str(row["O/U Amount"]) + "\n\n"
     if (realBet):
         context = ssl.create_default_context()
         with smtplib.SMTP(smtp_server, port) as server:
