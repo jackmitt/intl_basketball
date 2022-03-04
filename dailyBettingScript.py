@@ -35,7 +35,7 @@ def kellyStake(p, decOdds, kellyDiv):
 
 def scrapePinnacle(league):
     A = Database(["Date","Home","Away","Spread","Home Spread Odds","Away Spread Odds","Total","Over Total Odds","Under Total Odds"])
-    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    driver_path = ChromeDriverManager().install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
