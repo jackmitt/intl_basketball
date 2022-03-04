@@ -230,6 +230,13 @@ def updateSeasonStats(league, last_date):
                     stats.at[index, "Home"] = "BAYR"
                 if (row["Away"] == "BAY" and "Bayreuth" in row["url"].split("-at-")[0]):
                     stats.at[index, "Away"] = "BAYR"
+        #Fix Fortitudo bologna Italy
+        if (league == "Italy"):
+            for index, row in stats.iterrows():
+                if (row["Home"] == "BOL" and "Fortituto-Kontatto" in row["url"].split("-at-")[1]):
+                    stats.at[index, "Home"] = "BOLO"
+                if (row["Away"] == "BOL" and "Fortituto-Kontatto" in row["url"].split("-at-")[0]):
+                    stats.at[index, "Away"] = "BOLO"
         stats.to_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", index = False)
 
     for url in playerUrls:
