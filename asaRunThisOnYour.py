@@ -48,19 +48,19 @@ for league in leagues:
     statsGood = True
         #except:
         #print ("Failed to update season stats for " + league)
-    if (statsGood):
-        try:
-            lines = dbs.scrapePinnacle(league)
-            curBets = pd.read_csv("./csv_data/botbets3.0.csv", encoding = "ISO-8859-1")
-            if (not lines.empty):
-                droprows = []
-                for index, row in lines.iterrows():
-                    for i, r in curBets.iterrows():
-                        if (row["Home"] == r["Home"] and row["Away"] == r["Away"] and abs(row["Date"] - datetime.date(int(r["Date"].split("-")[0]), int(r["Date"].split("-")[1]), int(r["Date"].split("-")[2]))).days <= 2):
-                            droprows.append(index)
-                            break
-                lines = lines.drop(droprows)
-                if (not lines.empty):
-                    dbs.bet(league, lines)
-        except:
-            print("Failed to scrape pinnacle / bet for " + league)
+    # if (statsGood):
+    #     try:
+    lines = dbs.scrapePinnacle(league)
+    curBets = pd.read_csv("./csv_data/botbets3.0.csv", encoding = "ISO-8859-1")
+    if (not lines.empty):
+        droprows = []
+        for index, row in lines.iterrows():
+            for i, r in curBets.iterrows():
+                if (row["Home"] == r["Home"] and row["Away"] == r["Away"] and abs(row["Date"] - datetime.date(int(r["Date"].split("-")[0]), int(r["Date"].split("-")[1]), int(r["Date"].split("-")[2]))).days <= 2):
+                    droprows.append(index)
+                    break
+        lines = lines.drop(droprows)
+        if (not lines.empty):
+            dbs.bet(league, lines)
+        # except:
+        #     print("Failed to scrape pinnacle / bet for " + league)
