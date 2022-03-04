@@ -223,6 +223,13 @@ def updateSeasonStats(league, last_date):
         stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
         temp = A.getDataFrame()
         stats = stats.append(temp)
+        #fix bayreuth name Germany
+        if (league == "Germany"):
+            for index, row in stats.iterrows():
+                if (row["Home"] == "BAY" and "Bayreuth" in row["url"].split("-at-")[1]):
+                    stats.at[index, "Home"] = "BAYR"
+                if (row["Away"] == "BAY" and "Bayreuth" in row["url"].split("-at-")[0]):
+                    stats.at[index, "Away"] = "BAYR"
         stats.to_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", index = False)
 
     for url in playerUrls:
@@ -640,7 +647,7 @@ def bet(league, pinnacleLines):
         A.addCellToRow(row["Under Total Odds"])
         A.appendRow()
 
-    test = A.getDataFrame()
+    test = A.getDataFrame().dropna()
 
     dict = {}
     for col in test.columns:
