@@ -33,9 +33,9 @@ for league in leagues:
     #pe.betWithLines(20000, league)
     #pe.analyzeMyLines(league, "Total", "Team Model")
     #pe.analyzeMyLines(league, "Total")
-    pe.flatBetStrat(league, "Total")
+    #pe.flatBetStrat(league, "Total")
     #pe.lineConfidence(league, "Spread")
-    #pe.agreeAnalysis(league, "Total")
+    pe.agreeAnalysis(league, "Spread")
 #pe.simulateKellyBets(20000, kellyDiv = 1, preCovid = False)
 
 
