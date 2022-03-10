@@ -33,6 +33,7 @@ import gc
 
 
 leagues = ["Spain","France","Italy","Germany","Euroleague","VTB","Italy2"]
+leagues = ["France"]
 for league in leagues:
     with open("./PieUpdates/" + league + ".txt", 'r') as file:
         date_time = datetime.datetime.strptime(file.read(), "%d-%b-%Y (%H:%M:%S)")
@@ -42,7 +43,7 @@ for league in leagues:
         #try:
         stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
         last = stats.at[len(stats.index) - 1, "Date"]
-        dbs.updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+        dbs.updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])) - datetime.timedelta(days=2))
         with open("./PieUpdates/" + league + ".txt", 'w') as file:
             file.write(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
         statsGood = True

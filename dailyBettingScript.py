@@ -87,6 +87,7 @@ def scrapePinnacle(league):
     return (A.getDataFrame())
 
 def updateSeasonStats(league, last_date):
+    oldUrls = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")["url"].tolist()
     with open("./csv_data/" + league + "/player_priors.pkl","rb") as inputFile:
         priorDict = pickle.load(inputFile)
     A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
@@ -101,6 +102,7 @@ def updateSeasonStats(league, last_date):
     chrome_options.add_argument("--headless")
     browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
     browser.maximize_window()
+    time.sleep(5)
     curDate = last_date +datetime.timedelta(days=1)
     gameUrls = []
     playerUrls = []
@@ -129,7 +131,7 @@ def updateSeasonStats(league, last_date):
         for t in all.find_all("table"):
             for h in t.find_all('a'):
                 if (h.has_attr("href") and "boxscore" in h['href']):
-                    if (h['href'] not in gameUrls):
+                    if (h['href'] not in gameUrls and h["href"] not in oldUrls):
                         gameUrls.append(h['href'])
         curDate = curDate + datetime.timedelta(days=1)
 
