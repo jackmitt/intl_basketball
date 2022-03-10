@@ -102,7 +102,6 @@ def updateSeasonStats(league, last_date):
     chrome_options.add_argument("--headless")
     browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
     browser.maximize_window()
-    time.sleep(5)
     curDate = last_date +datetime.timedelta(days=1)
     gameUrls = []
     playerUrls = []
@@ -126,6 +125,7 @@ def updateSeasonStats(league, last_date):
         urlRoot = "https://basketball.realgm.com/international/league/1/Euroleague/scores/"
     while (curDate < datetime.date.today()+datetime.timedelta(days=1)):
         browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
+        time.sleep(5)
         soup = BeautifulSoup(browser.page_source, 'html.parser')
         all = soup.find(class_="large-column-left scoreboard")
         for t in all.find_all("table"):
@@ -137,6 +137,7 @@ def updateSeasonStats(league, last_date):
 
     for game in gameUrls:
         browser.get("https://basketball.realgm.com" + game)
+        time.sleep(5)
         soup = BeautifulSoup(browser.page_source, 'html.parser')
         A.addCellToRow(game.split("boxscore/")[1].split("/")[0])
         A.addCellToRow(soup.find_all(class_="basketball force-table")[1].find("tbody").find_all("tr")[1].find_all("td")[0].text)
@@ -243,6 +244,7 @@ def updateSeasonStats(league, last_date):
 
     for url in playerUrls:
         browser.get("https://basketball.realgm.com" + url)
+        time.sleep(5)
         soup = BeautifulSoup(browser.page_source, 'html.parser')
         priorDict[url.split("player/")[1].split("/Summary")[0].replace("-", " ")] = {}
         for x in soup.find_all("h2"):
