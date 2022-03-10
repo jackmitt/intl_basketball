@@ -1037,7 +1037,7 @@ def bet(league, pinnacleLines):
             server.sendmail(sender_email, receiver_email, message)
 
 
-#league = "Italy2"
+#league = "VTB"
 # stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
 # last = stats.at[len(stats.index) - 1, "Date"]
 # updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
