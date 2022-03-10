@@ -39,15 +39,15 @@ for league in leagues:
     statsGood = True
     if (abs((date_time - datetime.datetime.now()).total_seconds()) > 5 * 60 * 60):
         statsGood = False
-        try:
-            stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
-            last = stats.at[len(stats.index) - 1, "Date"]
-            dbs.updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
-            with open("./PieUpdates/" + league + ".txt", 'w') as file:
-                file.write(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
-            statsGood = True
-        except:
-            print ("Failed to update season stats for " + league)
+        #try:
+        stats = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")
+        last = stats.at[len(stats.index) - 1, "Date"]
+        dbs.updateSeasonStats(league, datetime.date(int(last.split("-")[0]), int(last.split("-")[1]), int(last.split("-")[2])))
+        with open("./PieUpdates/" + league + ".txt", 'w') as file:
+            file.write(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
+        statsGood = True
+        #except:
+            #print ("Failed to update season stats for " + league)
     if (statsGood):
         try:
             lines = dbs.scrapePinnacle(league)
