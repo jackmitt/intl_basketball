@@ -33,7 +33,6 @@ import gc
 
 
 leagues = ["Spain","France","Italy","Germany","Euroleague","VTB","Italy2"]
-leagues = ["France"]
 for league in leagues:
     with open("./PieUpdates/" + league + ".txt", 'r') as file:
         date_time = datetime.datetime.strptime(file.read(), "%d-%b-%Y (%H:%M:%S)")
