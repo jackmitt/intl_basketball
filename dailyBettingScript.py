@@ -102,7 +102,7 @@ def updateSeasonStats(league, last_date):
     driver_path = ChromeDriverManager().install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
-    #chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument("--window-size=1325x744")
     browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
