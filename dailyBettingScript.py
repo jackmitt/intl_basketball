@@ -87,7 +87,10 @@ def scrapePinnacle(league):
     return (A.getDataFrame())
 
 def updateSeasonStats(league, last_date):
-    oldUrls = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")["url"].tolist()
+    if (not exists("./csv_data/" + league + "/Current Season/gameStatsNew.csv")):
+        oldUrls = []
+    else:
+        oldUrls = pd.read_csv("./csv_data/" + league + "/Current Season/gameStatsNew.csv", encoding = "ISO-8859-1")["url"].tolist()
     with open("./csv_data/" + league + "/player_priors.pkl","rb") as inputFile:
         priorDict = pickle.load(inputFile)
     A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
@@ -99,7 +102,7 @@ def updateSeasonStats(league, last_date):
     driver_path = ChromeDriverManager().install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
+    #chrome_options.add_argument("--headless")
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument("--window-size=1325x744")
     browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)

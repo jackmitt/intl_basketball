@@ -47,8 +47,9 @@ for league in leagues:
                 with open("./PieUpdates/" + league + ".txt", 'w') as file:
                     file.write(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
                 statsGood = True
-            except:
-                print ("Failed to update season stats for " + league)
+            break
+        except:
+            print ("Failed to update season stats for " + league)
     if (statsGood):
         try:
             lines = dbs.scrapePinnacle(league)
