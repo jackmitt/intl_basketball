@@ -778,37 +778,37 @@ def bet(league, pinnacleLines):
         predictions.append(p)
     test["Team Model Predicted Total"] = predictions
 
-    bankroll = 17000
+    bankroll = 16000
     bet = []
     amount = []
     if (league == "Spain"):
-        agreewager = 0.05
-        playerwager = 0.03
+        agreewager = 0.04
+        playerwager = 0.025
         teamwager = 0.00
     elif (league == "France"):
-        agreewager = 0.05
-        playerwager = 0.03
+        agreewager = 0.04
+        playerwager = 0.025
         teamwager = 0.00
     elif (league == "Euroleague"):
-        agreewager = 0.05
+        agreewager = 0.04
         playerwager = 0.00
         teamwager = 0.00
     elif (league == "VTB"):
-        agreewager = 0.05
-        playerwager = 0.03
-        teamwager = 0.03
-    elif (league == "Italy2"):
         agreewager = 0.04
-        playerwager = 0.03
-        teamwager = 0.03
+        playerwager = 0.025
+        teamwager = 0.025
+    elif (league == "Italy2"):
+        agreewager = 0.03
+        playerwager = 0.025
+        teamwager = 0.025
     elif (league == "Germany"):
         agreewager = 0.00
-        playerwager = 0.04
-        teamwager = 0.04
+        playerwager = 0.03
+        teamwager = 0.03
     elif (league == "Italy"):
         agreewager = 0.00
         playerwager = 0.00
-        teamwager = 0.05
+        teamwager = 0.04
     for index, row in test.iterrows():
         if ((abs(row["Player Model Predicted Spread"] - float(row["Spread"])) < 3.5 or abs(row["Player Model Predicted Spread"] - float(row["Spread"])) > 7.5) and (abs(row["Team Model Predicted Spread"] - float(row["Spread"])) < 5 or abs(row["Team Model Predicted Spread"] - float(row["Spread"])) > 12.5)):
             bet.append(np.nan)
@@ -870,21 +870,21 @@ def bet(league, pinnacleLines):
     amount = []
     if (league != "Italy2"):
         if (league == "Spain" or league == "Italy"):
-            agreewager = 0.05
-            playerwager = 0.03
+            agreewager = 0.04
+            playerwager = 0.025
             teamwager = 0.00
         elif (league == "France"):
-            playerwager = 0.035
-            agreewager = 0.06
+            playerwager = 0.03
+            agreewager = 0.04
             teamwager = 0.00
         elif (league == "Germany"):
-            agreewager = 0.02
-            playerwager = 0.04
+            agreewager = 0.015
+            playerwager = 0.035
             teamwager = 0.00
         elif (league == "Euroleague"):
             agreewager = 0.00
             playerwager = 0.00
-            teamwager = 0.03
+            teamwager = 0.025
         elif (league == "VTB"):
             agreewager = 0.00
             playerwager = 0.00
