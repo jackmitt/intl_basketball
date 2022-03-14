@@ -81,7 +81,25 @@ def scrapePinnacle(league):
         A.addCellToRow(game.find_all("span")[6].text)
         A.addCellToRow(game.find_all("span")[9].text)
         A.addCellToRow(game.find_all("span")[10].text)
-        A.addCellToRow(game.find_all("span")[12].text)
+        #If this fails, there is no ML spans so you need to look at different stuff
+        try:
+            A.addCellToRow(game.find_all("span")[12].text)
+        except:
+            A.trashRow()
+            A.addCellToRow(datetime.date.today())
+            if ("ERROR" in standardizeTeamName(game.find_all("span")[0].text, league)):
+                print (standardizeTeamName(game.find_all("span")[0].text, league))
+            if ("ERROR" in standardizeTeamName(game.find_all("span")[1].text, league)):
+                print (standardizeTeamName(game.find_all("span")[1].text, league))
+
+            A.addCellToRow(standardizeTeamName(game.find_all("span")[0].text, league))
+            A.addCellToRow(standardizeTeamName(game.find_all("span")[1].text, league))
+            A.addCellToRow(game.find_all("span")[3].text)
+            A.addCellToRow(game.find_all("span")[4].text)
+            A.addCellToRow(game.find_all("span")[6].text)
+            A.addCellToRow(game.find_all("span")[7].text)
+            A.addCellToRow(game.find_all("span")[9].text)
+            A.addCellToRow(game.find_all("span")[10].text)
         A.appendRow()
     browser.close()
     return (A.getDataFrame())
