@@ -796,7 +796,7 @@ def bet(league, pinnacleLines):
         predictions.append(p)
     test["Team Model Predicted Total"] = predictions
 
-    bankroll = 16000
+    bankroll = 14500
     bet = []
     amount = []
     if (league == "Spain"):
