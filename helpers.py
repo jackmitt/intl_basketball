@@ -619,7 +619,7 @@ def standardizeTeamName(name, league):
             return ("FMC")
         elif ("agrigento" == name):
             return ("MON")
-        elif ("assigeco " in name):
+        elif ("assigeco " in name or " piacenza" in name):
             return ("ASS")
         elif (" trapani" in name):
             return ("TRA")
@@ -691,7 +691,7 @@ def standardizeTeamName(name, league):
             return ("BOLOGN")
         elif (" cento" in name):
             return ("CENT")
-        elif (" piacenza" in name or "piacentina" in name):
+        elif ("piacentina" in name):
             return ("PIAC")
         elif ("virtus cassino" in name):
             return ("CASS")
