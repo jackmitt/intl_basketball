@@ -963,9 +963,9 @@ def bet(league, pinnacleLines):
                     bet.append("Under")
                     amount.append(bankroll * teamwager/div)
     else:
-        agreewager = 0.05
-        playerwager = 0.035
-        teamwager = 0.035
+        agreewager = 0.04
+        playerwager = 0.03
+        teamwager = 0.03
         for index, row in test.iterrows():
             if ((abs(row["Player Model Predicted Total"] - float(row["Total"])) < 3.5 or abs(row["Player Model Predicted Total"] - float(row["Total"])) > 12.5) and (abs(row["Team Model Predicted Total"] - float(row["Total"])) < 3.5 or abs(row["Team Model Predicted Total"] - float(row["Total"])) > 12.5)):
                 bet.append(np.nan)
