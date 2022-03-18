@@ -797,6 +797,7 @@ def bet(league, pinnacleLines):
     test["Team Model Predicted Total"] = predictions
 
     bankroll = 14500
+    div = 1.5
     bet = []
     amount = []
     if (league == "Spain"):
@@ -839,14 +840,14 @@ def bet(league, pinnacleLines):
                     amount.append(np.nan)
                     continue
                 bet.append(row["Spread"])
-                amount.append(bankroll * agreewager)
+                amount.append(bankroll * agreewager/div)
             elif (row["Player Model Predicted Spread"] > float(row["Spread"]) and row["Team Model Predicted Spread"] > float(row["Spread"])):
                 if (agreewager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(0-float(row["Spread"]))
-                amount.append(bankroll * agreewager)
+                amount.append(bankroll * agreewager/div)
             else:
                 bet.append(np.nan)
                 amount.append(np.nan)
@@ -858,14 +859,14 @@ def bet(league, pinnacleLines):
                     amount.append(np.nan)
                     continue
                 bet.append(row["Spread"])
-                amount.append(bankroll * playerwager)
+                amount.append(bankroll * playerwager/div)
             elif (row["Player Model Predicted Spread"] > float(row["Spread"])):
                 if (playerwager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(0-float(row["Spread"]))
-                amount.append(bankroll * playerwager)
+                amount.append(bankroll * playerwager/div)
         elif(abs(row["Team Model Predicted Spread"] - float(row["Spread"])) > 5 and abs(row["Team Model Predicted Spread"] - float(row["Spread"])) < 12.5):
             if (row["Team Model Predicted Spread"] < float(row["Spread"])):
                 if (teamwager == 0.00):
@@ -873,14 +874,14 @@ def bet(league, pinnacleLines):
                     amount.append(np.nan)
                     continue
                 bet.append(row["Spread"])
-                amount.append(bankroll * teamwager)
+                amount.append(bankroll * teamwager/div)
             elif (row["Team Model Predicted Spread"] > float(row["Spread"])):
                 if (teamwager == 0.00):
                     bet.append(np.nan)
                     amount.append(np.nan)
                     continue
                 bet.append(0-float(row["Spread"]))
-                amount.append(bankroll * teamwager)
+                amount.append(bankroll * teamwager/div)
     test["Spread Bet"] = bet
     test["Spread Amount"] = amount
 
@@ -919,14 +920,14 @@ def bet(league, pinnacleLines):
                         amount.append(np.nan)
                         continue
                     bet.append("Over")
-                    amount.append(bankroll * agreewager)
+                    amount.append(bankroll * agreewager/div)
                 elif (row["Player Model Predicted Total"] < float(row["Total"]) and row["Team Model Predicted Total"] < float(row["Total"])):
                     if (agreewager == 0.00):
                         bet.append(np.nan)
                         amount.append(np.nan)
                         continue
                     bet.append("Under")
-                    amount.append(bankroll * agreewager)
+                    amount.append(bankroll * agreewager/div)
                 else:
                     bet.append(np.nan)
                     amount.append(np.nan)
@@ -938,14 +939,14 @@ def bet(league, pinnacleLines):
                         amount.append(np.nan)
                         continue
                     bet.append("Over")
-                    amount.append(bankroll * playerwager)
+                    amount.append(bankroll * playerwager/div)
                 else:
                     if (playerwager == 0.00):
                         bet.append(np.nan)
                         amount.append(np.nan)
                         continue
                     bet.append("Under")
-                    amount.append(bankroll * playerwager)
+                    amount.append(bankroll * playerwager/div)
             elif (abs(row["Team Model Predicted Total"] - float(row["Total"])) > 5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) < 12.5):
                 if (row["Team Model Predicted Total"] > float(row["Total"])):
                     if (teamwager == 0.00):
@@ -953,14 +954,14 @@ def bet(league, pinnacleLines):
                         amount.append(np.nan)
                         continue
                     bet.append("Over")
-                    amount.append(bankroll * teamwager)
+                    amount.append(bankroll * teamwager/div)
                 else:
                     if (teamwager == 0.00):
                         bet.append(np.nan)
                         amount.append(np.nan)
                         continue
                     bet.append("Under")
-                    amount.append(bankroll * teamwager)
+                    amount.append(bankroll * teamwager/div)
     else:
         agreewager = 0.05
         playerwager = 0.035
@@ -977,14 +978,14 @@ def bet(league, pinnacleLines):
                         amount.append(np.nan)
                         continue
                     bet.append("Over")
-                    amount.append(bankroll * agreewager)
+                    amount.append(bankroll * agreewager/div)
                 elif (row["Player Model Predicted Total"] < float(row["Total"]) and row["Team Model Predicted Total"] < float(row["Total"])):
                     if (agreewager == 0.00):
                         bet.append(np.nan)
                         amount.append(np.nan)
                         continue
                     bet.append("Under")
-                    amount.append(bankroll * agreewager)
+                    amount.append(bankroll * agreewager/div)
             elif (abs(row["Player Model Predicted Total"] - float(row["Total"])) > 3.5 and abs(row["Player Model Predicted Total"] - float(row["Total"])) < 12.5):
                 if (row["Player Model Predicted Total"] > float(row["Total"])):
                     if (playerwager == 0.00):
@@ -992,14 +993,14 @@ def bet(league, pinnacleLines):
                         amount.append(np.nan)
                         continue
                     bet.append("Over")
-                    amount.append(bankroll * playerwager)
+                    amount.append(bankroll * playerwager/div)
                 else:
                     if (playerwager == 0.00):
                         bet.append(np.nan)
                         amount.append(np.nan)
                         continue
                     bet.append("Under")
-                    amount.append(bankroll * playerwager)
+                    amount.append(bankroll * playerwager/div)
             elif (abs(row["Team Model Predicted Total"] - float(row["Total"])) > 3.5 and abs(row["Team Model Predicted Total"] - float(row["Total"])) < 12.5):
                 if (row["Team Model Predicted Total"] > float(row["Total"])):
                     if (teamwager == 0.00):
@@ -1007,14 +1008,14 @@ def bet(league, pinnacleLines):
                         amount.append(np.nan)
                         continue
                     bet.append("Over")
-                    amount.append(bankroll * teamwager)
+                    amount.append(bankroll * teamwager/div)
                 else:
                     if (teamwager == 0.00):
                         bet.append(np.nan)
                         amount.append(np.nan)
                         continue
                     bet.append("Under")
-                    amount.append(bankroll * teamwager)
+                    amount.append(bankroll * teamwager/div)
     test["O/U Bet"] = bet
     test["O/U Amount"] = amount
 
