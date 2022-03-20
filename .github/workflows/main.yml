@@ -4,8 +4,8 @@ name: Auto Scrape
 
 # Controls when the workflow will run
 on:
-  schedule:
-    - cron: "*/60 */2 * * *"
+  #schedule:
+   # - cron: "*/60 */2 * * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
