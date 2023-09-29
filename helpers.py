@@ -117,6 +117,10 @@ def standardizeTeamName(name, league):
             return ("SPB")
         elif ("breogan" in name):
             return ("BRE")
+        elif ("basquet girona" in name):
+            return ("SJG")
+        elif ("c.b. granada" in name):
+            return ("GRA")
         else:
             return ("ERROR: " + name)
 

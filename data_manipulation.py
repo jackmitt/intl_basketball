@@ -92,14 +92,8 @@ def checkTeamNames(league):
             continue
 
 #for spreads and totals
-def combine_spreads_and_stats(league, imputeScoresFromBackup = True):
+def combine_spreads_and_stats(league):
     stats = pd.read_csv("./csv_data/" + league + "/gameStatsNew.csv", encoding = "ISO-8859-1")
-    if (imputeScoresFromBackup):
-        backup = pd.read_csv("./csv_data/" + league + "/backup/combined.csv", encoding = "ISO-8859-1")
-        stats["Home Score"] = backup["Home Score"]
-        stats["Away Score"] = backup["Away Score"]
-        stats["Home"] = backup["Home"]
-        stats["Away"] = backup["Away"]
     odds = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")
     A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score"])
     for a in ["h_","a_"]:
@@ -1107,3 +1101,6 @@ def aggregateModelPredictions(league):
     test = test.dropna()
 
     test.to_csv("./csv_data/" + league + "/predictions.csv", index = False)
+
+
+checkTeamNames("France")

@@ -8,11 +8,11 @@ from helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
 from helpers import standardizeTeamName
 import pickle
+import os
 
 def americanToDecimal(odds):
     if (odds < 0):
@@ -21,18 +21,26 @@ def americanToDecimal(odds):
         return (odds/100 + 1)
 
 
-#Scrapes regular season closing betting lines from oddsportal (consensus average) for all seasons since 2008/2009 and saves them to a csv - Make sure you have chromedriver.exe for the correct version of Chrome
+#Scrapes regular season closing betting lines from oddsportal (consensus average) for all seasons since 2008/2009 and saves them to a csv
 #Take out the covid bubble games yourself manually
-def oddsportal(yearStart, yearEnd):
+def oddsportal(yearStart, yearEnd, league):
     A = Database(["Season","Date","Home","Away","Home ML","Away ML","Favorite","Spread","Home Spread Odds","Away Spread Odds","Home Score","Away Score","url"])
     seasons = []
     for i in range(yearStart, yearEnd+1):
         seasons.append(str(i) + "-" + str(i+1))
-    browser = webdriver.Chrome(executable_path='chromedriver.exe')
-    if (not exists("./gameUrls.csv")):
+    browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options = chrome_options)
+    if (not exists("./oddsPortal_gameUrls/" + league + ".csv")):
         gameUrls = []
+        if (league == 'Spain'):
+            urlRoot = "https://www.oddsportal.com/basketball/spain/acb-"
+        elif (league == "France"):
+            urlRoot = "https://www.oddsportal.com/basketball/france/lnb-"
+        elif (league == "Germany"):
+            urlRoot = "https://www.oddsportal.com/basketball/germany/bbl-"
+        elif (league == "Italy"):
+            urlRoot = "https://www.oddsportal.com/basketball/italy/lega-a-"
         for season in seasons:
-            browser.get("https://www.oddsportal.com/basketball/spain/acb-" + season + "/results/")
+            browser.get(urlRoot + season + "/results/")
             browser.maximize_window()
             for i in range(10):
                 soup = BeautifulSoup(browser.page_source, 'html.parser')
@@ -52,14 +60,14 @@ def oddsportal(yearStart, yearEnd):
         save["urls"] = gameUrls
         dfFinal = pd.DataFrame.from_dict(save)
         dfFinal = dfFinal.drop_duplicates()
-        dfFinal.to_csv("./gameUrls.csv", index = False)
+        dfFinal.to_csv("./oddsPortal_gameUrls/" + league + ".csv", index = False)
     else:
-        gameUrls = pd.read_csv('./gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
+        gameUrls = pd.read_csv("./oddsPortal_gameUrls/" + league + ".csv", encoding = "ISO-8859-1")["urls"].tolist()
 
     counter = 0
-    if (exists("./csv_data/bettingLines.csv")):
-        A.initDictFromCsv("./csv_data/bettingLines.csv")
-        scrapedGames = pd.read_csv('./csv_data/bettingLines.csv', encoding = "ISO-8859-1")["url"].tolist()
+    if (exists("./csv_data/" + league + "/spreads.csv")):
+        A.initDictFromCsv("./csv_data/" + league + "/spreads.csv")
+        scrapedGames = pd.read_csv("./csv_data/" + league + "/spreads.csv", encoding = "ISO-8859-1")["url"].tolist()
         for game in scrapedGames:
             gameUrls.remove(game)
     try:
@@ -67,7 +75,7 @@ def oddsportal(yearStart, yearEnd):
             browser.get(game)
             soup = BeautifulSoup(browser.page_source, 'html.parser')
             #season
-            A.addCellToRow(game.split("acb-")[1].split("-")[0] + '/' + game.split("acb-")[1].split("-")[1].split("/")[0])
+            A.addCellToRow("20" + game.split("-20")[1].split("-")[0] + '/' + game.split("20" + game.split("-20")[1].split("-")[0])[1].split("-")[1].split("/")[0])
             #date
             A.addCellToRow(soup.find(id="col-content").find("p").text)
             #home
@@ -146,54 +154,82 @@ def oddsportal(yearStart, yearEnd):
             A.appendRow()
             counter += 1
             if (counter % 20 == 1):
-                A.dictToCsv("./csv_data/bettingLines.csv")
+                A.dictToCsv("./csv_data/" + league + "/spreads.csv")
     except:
         browser.close()
         print ("SCRAPER FAILED. RESTARTING...")
         oddsportal(yearStart, yearEnd)
 
-    A.dictToCsv("./csv_data/bettingLines.csv")
+    A.dictToCsv("./csv_data/" + league + "/spreads.csv")
     browser.close()
 
-def realgm(urlRoot, year, month, day, leagueBased = False):
+def realgm(urlRoot, year, month, day, league = ""):
     A = Database(["Date","Home","Away","Poss","h_ORtg","a_ORtg","h_eFG%","a_eFG%","h_TO%","a_TO%","h_OR%","a_OR%","h_FTR","a_FTR","h_FIC","a_FIC","url"])
     for a in ["h_","a_"]:
         for b in ["s_","r1_","r2_","r3_","r4_","l1_","l2_","l3_"]:
             for c in ["pg_","sg_","sf_","pf_","c_"]:
                 for d in ["name","seconds","FGM-A","3PM-A","FTM-A","FIC","OReb","DReb","Ast","PF","STL","TO","BLK","PTS"]:
                     A.addColumn(a + b + c + d)
-    driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+    #driver_path = ChromeDriverManager().install()
+    #driver_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
-    browser = webdriver.Chrome(executable_path=driver_path, options = chrome_options)
+    #chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options = chrome_options)
     browser.maximize_window()
-    if (leagueBased):
-        league = urlRoot
-        gameUrls = pd.read_csv('./realgm_gameUrls/' + urlRoot + '.csv', encoding = "ISO-8859-1")["url"].tolist()
-    else:
-        league = urlRoot.split("/scores")[0].split("/")[6]
-        if (not exists("./realgm_gameUrls/" + league + "_realgm_gameUrls.csv")):
-            curDate = datetime.date(year, month, day)
-            gameUrls = []
-            while (curDate < datetime.date(2022, 1, 1)):
-                browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
-                soup = BeautifulSoup(browser.page_source, 'html.parser')
-                all = soup.find(class_="large-column-left scoreboard")
-                for t in all.find_all("table"):
-                    for h in t.find_all('a'):
-                        #print (t.find_all("tr")[3].find("th").find("a")['href'])
-                        if (h.has_attr("href") and "boxscore" in h['href']):
-                            if (h['href'] not in gameUrls):
-                                gameUrls.append(h['href'])
-                curDate = curDate + datetime.timedelta(days=1)
-            save = {}
-            save["urls"] = gameUrls
-            dfFinal = pd.DataFrame.from_dict(save)
-            dfFinal = dfFinal.drop_duplicates()
-            dfFinal.to_csv('./realgm_gameUrls/' + league + '_realgm_gameUrls.csv', index = False)
-        else:
-            gameUrls = pd.read_csv('./realgm_gameUrls/' + league + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
+    league_long = urlRoot.split("league/")[1].split("/")[1]
+    #Assume existance for now
+    try:
+        gameUrls = pd.read_csv('./realgm_gameUrls/' + league_long + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
+        curDate = datetime.date(int(gameUrls[-1].split("boxscore/")[1].split("-")[0]), int(gameUrls[-1].split("boxscore/")[1].split("-")[1]), int(gameUrls[-1].split("boxscore/")[1].split("-")[2].split("/")[0]))
+        skip = False
+    except:
+        skip = True
+        curDate = datetime.date(year, month, day)
+        gameUrls = []
+    if (skip or "/2023-06" not in gameUrls[-1]):
+        while (curDate < datetime.date(2023, 8, 1)):
+            browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            all = soup.find(class_="large-column-left scoreboard")
+            for t in all.find_all("table"):
+                for h in t.find_all('a'):
+                    #print (t.find_all("tr")[3].find("th").find("a")['href'])
+                    if (h.has_attr("href") and "boxscore" in h['href']):
+                        if (h['href'] not in gameUrls):
+                            gameUrls.append(h['href'])
+            curDate = curDate + datetime.timedelta(days=1)
+        save = {}
+        save["urls"] = gameUrls
+        dfFinal = pd.DataFrame.from_dict(save)
+        dfFinal = dfFinal.drop_duplicates()
+        dfFinal.to_csv('./realgm_gameUrls/' + league_long + '_realgm_gameUrls.csv', index = False)
+
+
+
+    # else:
+    #     league = urlRoot.split("/scores")[0].split("/")[6]
+    #     if (not exists("./realgm_gameUrls/" + league + "_realgm_gameUrls.csv")):
+    #         curDate = datetime.date(year, month, day)
+    #         gameUrls = []
+    #         while (curDate < datetime.date(2022, 1, 1)):
+    #             browser.get(curDate.strftime(urlRoot + "%Y-%m-%d/All"))
+    #             soup = BeautifulSoup(browser.page_source, 'html.parser')
+    #             all = soup.find(class_="large-column-left scoreboard")
+    #             for t in all.find_all("table"):
+    #                 for h in t.find_all('a'):
+    #                     #print (t.find_all("tr")[3].find("th").find("a")['href'])
+    #                     if (h.has_attr("href") and "boxscore" in h['href']):
+    #                         if (h['href'] not in gameUrls):
+    #                             gameUrls.append(h['href'])
+    #             curDate = curDate + datetime.timedelta(days=1)
+    #         save = {}
+    #         save["urls"] = gameUrls
+    #         dfFinal = pd.DataFrame.from_dict(save)
+    #         dfFinal = dfFinal.drop_duplicates()
+    #         dfFinal.to_csv('./realgm_gameUrls/' + league + '_realgm_gameUrls.csv', index = False)
+    #     else:
+    #         gameUrls = pd.read_csv('./realgm_gameUrls/' + league + '_realgm_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
 
     counter = 0
     if (exists("./csv_data/" + league + "/gameStatsNew.csv")):
@@ -365,11 +401,11 @@ def realgmPlayerPriorsPartTwo(league):
 
 def nowgoal(urlRoot, startMonth, league):
     A = Database(["Date","Home","Away","Home Open ML","Away Open ML","Home Close ML","Away Close ML","Open Spread","Home Open Spread Odds","Away Open Spread Odds","Close Spread","Home Close Spread Odds","Away Close Spread Odds","Open Total","Home Open Total Odds","Away Open Total Odds","Close Total","Home Close Total Odds","Away Close Total Odds","Home Score","Away Score","url"])
-    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+    browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
     browser.maximize_window()
-    if (not exists("./" + league + "_nowgoal_gameUrls.csv")):
+    if (not exists('./nowgoal_gameUrls/' + league + '.csv')):
         if (league != "Euroleague" and league != "VTB"):
-            rootier = "https://basketball.nowgoal5.com/Normal/"
+            rootier = "https://basketball.nowgoal9.com/Normal/"
             league_num = urlRoot.split("/")[5]
             curDate = datetime.date(2017, startMonth, 1)
             curSeason = "2017-2018"
@@ -380,7 +416,7 @@ def nowgoal(urlRoot, startMonth, league):
             #     curDate = datetime.date(2014, startMonth, 1)
             #     curSeason = "2014-2015"
             gameUrls = []
-            while (curDate < datetime.date(2022, 1, 1)):
+            while (curDate < datetime.date(2023, 7, 1)):
                 try:
                     browser.get(curDate.strftime(rootier + curSeason + "/" + league_num + "?y=%Y&m=%m"))
                 except:
@@ -389,7 +425,7 @@ def nowgoal(urlRoot, startMonth, league):
                 soup = BeautifulSoup(browser.page_source, 'html.parser')
                 if (len(soup.find_all(class_="odds-icon1x2 r0")) > 0):
                     for t in soup.find_all(class_="odds-icon1x2 r0"):
-                        gameUrls.append(t['href'])
+                        gameUrls.append("https://www.nowgoal9.com/oddscompbasket/" + t['onclick'].split("oddscomp(")[1].split(",")[0])
                     needToUpdate = True
                 else:
                     if (needToUpdate):
@@ -400,7 +436,7 @@ def nowgoal(urlRoot, startMonth, league):
             save["urls"] = gameUrls
             dfFinal = pd.DataFrame.from_dict(save)
             dfFinal = dfFinal.drop_duplicates()
-            dfFinal.to_csv('./' + league + '_nowgoal_gameUrls.csv', index = False)
+            dfFinal.to_csv('./nowgoal_gameUrls/' + league + '.csv', index = False)
         elif (league == "VTB"):
             rootier = "https://basketball.nowgoal5.com/CupMatch/"
             league_num = urlRoot.split("/")[5]
@@ -428,10 +464,10 @@ def nowgoal(urlRoot, startMonth, league):
                     for t in soup.find_all(class_="odds-icon1x2 r0"):
                         gameUrls.append(t['href'])
         else:
-            rootier = "https://basketball.nowgoal5.com/CupMatch/"
+            rootier = "https://basketball.nowgoal9.com/CupMatch/"
             league_num = urlRoot.split("/")[5]
             curDate = datetime.date(2014, startMonth, 1)
-            seasons = ["2014-2015","2015-2016","2016-2017","2017-2018","2018-2019","2019-2020","2020-2021"]
+            seasons = ["2014-2015","2015-2016","2016-2017","2017-2018","2018-2019","2019-2020","2020-2021","2021-2022","2022-2023"]
             gameUrls = []
             for curSeason in seasons:
                 browser.get(curDate.strftime(rootier + curSeason + "/" + league_num))
@@ -538,94 +574,25 @@ def nowgoal(urlRoot, startMonth, league):
                         gameUrls.append(t['href'])
 
     else:
-        gameUrls = pd.read_csv('./' + league + '_nowgoal_gameUrls.csv', encoding = "ISO-8859-1")["urls"].tolist()
+        gameUrls = pd.read_csv('./nowgoal_gameUrls/' + league + '.csv', encoding = "ISO-8859-1")["urls"].tolist()
     #
     #
     counter = 0
-    if (exists("./csv_data/" + league + "_spreads.csv")):
-        A.initDictFromCsv("./csv_data/" + league + "_spreads.csv")
-        scrapedGames = pd.read_csv('./csv_data/' + league + '_spreads.csv', encoding = "ISO-8859-1")["url"].tolist()
+    if (exists("./csv_data/" + league + "/spreads_9.csv")):
+        A.initDictFromCsv("./csv_data/" + league + "/spreads_9.csv")
+        scrapedGames = pd.read_csv('./csv_data/' + league + '/spreads_9.csv', encoding = "ISO-8859-1")["url"].tolist()
         for game in scrapedGames:
             gameUrls.remove(game)
 
+    firstIter = True
     for game in gameUrls:
-        browser.get("https:" + game)
+        browser.get(game)
+        time.sleep(1)
         soup = BeautifulSoup(browser.page_source, 'html.parser')
         try:
-            A.addCellToRow(soup.find(id="headStr").find("span").text.split()[0])
-            A.addCellToRow(soup.find_all(class_="o_team")[0].text)
-            A.addCellToRow(soup.find_all(class_="o_team")[1].text)
-            try:
-                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-2].find_all("td")[1].text)
-                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-2].find_all("td")[2].text)
-                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-1].find_all("td")[1].text)
-                A.addCellToRow(soup.find_all(class_="odds-table-bg")[4].find_all("tr")[-1].find_all("td")[2].text)
-            except:
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-            try:
-                bet365 = soup.find(class_="odds-table-bg").find_all("tr")[5]
-                test = float(bet365.find_all("td")[2].find("span").text) * -1
-                test = float(bet365.find_all("td")[2].find("span").text) * -1
-            except:
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(soup.find_all(class_="team_bf")[0].text)
-                A.addCellToRow(soup.find_all(class_="team_bf")[1].text)
-                A.addCellToRow(game)
-                A.appendRow()
-                continue
-            try:
-                A.addCellToRow(float(bet365.find_all("td")[2].text.replace(bet365.find_all("td")[2].find("span").text, "")) * -1)
-            except:
-                A.addCellToRow(float(bet365.find_all("td")[2].find("span").text) * -1)
-            A.addCellToRow(float(bet365.find_all("td")[1].find_all("span")[0].text) + 1)
-            A.addCellToRow(float(bet365.find_all("td")[3].find_all("span")[0].text) + 1)
-            A.addCellToRow(float(bet365.find_all("td")[2].find("span").text) * -1)
-            A.addCellToRow(float(bet365.find_all("td")[1].find_all("span")[1].text) + 1)
-            A.addCellToRow(float(bet365.find_all("td")[3].find_all("span")[1].text) + 1)
-            try:
-                test = float(bet365.find_all("td")[4].find_all("span")[0].text)
-            except:
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(np.nan)
-                A.addCellToRow(soup.find_all(class_="team_bf")[0].text)
-                A.addCellToRow(soup.find_all(class_="team_bf")[1].text)
-                A.addCellToRow(game)
-                A.appendRow()
-                continue
-            try:
-                A.addCellToRow(float(bet365.find_all("td")[5].text.replace(bet365.find_all("td")[5].find("span").text, "")))
-            except:
-                A.addCellToRow(float(bet365.find_all("td")[5].find("span").text))
-            A.addCellToRow(float(bet365.find_all("td")[4].find_all("span")[0].text) + 1)
-            A.addCellToRow(float(bet365.find_all("td")[6].find_all("span")[0].text) + 1)
-            A.addCellToRow(float(bet365.find_all("td")[5].find("span").text))
-            A.addCellToRow(float(bet365.find_all("td")[4].find_all("span")[1].text) + 1)
-            A.addCellToRow(float(bet365.find_all("td")[6].find_all("span")[1].text) + 1)
-            A.addCellToRow(soup.find_all(class_="team_bf")[0].text)
-            A.addCellToRow(soup.find_all(class_="team_bf")[1].text)
-            A.addCellToRow(game)
-            A.appendRow()
-            counter += 1
-            if (counter % 20 == 1):
-                A.dictToCsv("./csv_data/" + league + "_spreads.csv")
+            A.addCellToRow(soup.find(class_="time")["data-t"].split(" ")[0])
+            test = soup.find_all(class_="home")[0].find(class_="sclassName").text
+            test = soup.find_all(class_="guest")[0].find(class_="sclassName").text
         except:
             A.addCellToRow(np.nan)
             A.addCellToRow(np.nan)
@@ -650,6 +617,132 @@ def nowgoal(urlRoot, startMonth, league):
             A.addCellToRow(np.nan)
             A.addCellToRow(game)
             A.appendRow()
+            continue
+
+        A.addCellToRow(soup.find_all(class_="home")[0].find(class_="sclassName").text)
+        A.addCellToRow(soup.find_all(class_="guest")[0].find(class_="sclassName").text)
+        b365_id = -999
+        #try:
+        for i in range(2, len(soup.find("tbody").find_all("tr"))):
+            if (soup.find("tbody").find_all("tr")[i].find("td").text == "Bet365"):
+                b365_id = i
+                break
+        # except:
+        #     continue
+        #MLs
+        #try:
+        A.addCellToRow(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[5].find_all("span")[0].text)
+        A.addCellToRow(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[7].find_all("span")[0].text)
+        A.addCellToRow(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[5].find_all("span")[1].text)
+        A.addCellToRow(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[7].find_all("span")[1].text)
+        # except:
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #Spreads
+        # try:
+        #     test = float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[3].find_all("span")[0].text) * -1
+        #     test = float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[3].find_all("span")[1].text) * -1
+        # except:
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[0].text)
+        #     A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[3].text)
+        #     A.addCellToRow(game)
+        #     A.appendRow()
+        #     continue
+        try:
+            A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[3].find_all("span")[0].text) * -1)
+        except:
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(np.nan)
+            A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[0].text)
+            A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[3].text)
+            A.addCellToRow(game)
+            A.appendRow()
+            continue
+            # browser.close()
+            # nowgoal(urlRoot, startMonth, league)
+            # return 1
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[2].find_all("span")[0].text) + 1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[4].find_all("span")[0].text) + 1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[3].find_all("span")[1].text) * -1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[2].find_all("span")[1].text) + 1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[4].find_all("span")[1].text) + 1)
+        # try:
+        #     test = float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[9].find_all("span")[0].text)
+        #     test = float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[9].find_all("span")[1].text)
+        # except:
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[0].text)
+        #     A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[3].text)
+        #     A.addCellToRow(game)
+        #     A.appendRow()
+        #     continue
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[9].find_all("span")[0].text))
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[8].find_all("span")[0].text) + 1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[10].find_all("span")[0].text) + 1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[9].find_all("span")[1].text))
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[8].find_all("span")[1].text) + 1)
+        A.addCellToRow(float(soup.find("tbody").find_all("tr")[b365_id].find_all("td")[10].find_all("span")[1].text) + 1)
+        A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[0].text)
+        A.addCellToRow(soup.find_all(class_="end")[0].find_all("div")[3].text)
+        A.addCellToRow(game)
+        A.appendRow()
+        counter += 1
+        if (counter >= 1):
+            A.dictToCsv("./csv_data/" + league + "/spreads_9.csv")
+        firstIter = False
+        # except:
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(np.nan)
+        #     A.addCellToRow(game)
+        #     A.appendRow()
     # except:
     #     A.addCellToRow(np.nan)
     #     A.addCellToRow(np.nan)
@@ -666,7 +759,7 @@ def nowgoal(urlRoot, startMonth, league):
     #     A.appendRow()
         # A.dictToCsv("./csv_data/" + league + "_spreads.csv")
         # nowgoal(urlRoot, startMonth, league)
-    A.dictToCsv("./csv_data/" + league + "_spreads.csv")
+    A.dictToCsv("./csv_data/" + league + "/spreads_9.csv")
     browser.close()
 
 def scrapePinnacle(league):
